@@ -10,7 +10,14 @@
 // se ejecuta solo en el navegador y no se testea en Node (sin jsdom a propósito).
 
 export const SCHEMA_VERSION = 1;
-export const APP_VERSION = '0.6.0-iphone-ui';
+export const APP_VERSION = '0.7.0-progresion-bloque';
+
+// Ejercicios indicadores del Sistema Maestro Físico (Parte 6.7): "si 4+ de 6
+// suben su 1RM estimado mes a mes, todo lo demás es detalle". Se marcan en la
+// UI para que Alejandro sepa dónde mirar primero.
+export const INDICATOR_EXERCISE_IDS = [
+  'press_incl_db', 'press_militar', 'jalon_pecho', 'remo_pecho_apoyado', 'prensa_inclinada', 'curl_femoral_sentado'
+];
 
 // ============================================================================
 // Rutina data-driven (Fase 5) — funciones puras. La app ya no trae ejercicios
@@ -116,19 +123,109 @@ export function lastSetFor(byId, exerciseId) {
 
 function round2(n) { return Math.round(n * 100) / 100; }
 
-// Sugerencia de progresión simple (doble progresión): si la última serie llegó
-// al tope del rango con RIR en objetivo, sugiere subir peso con el incremento
-// del ejercicio; si quedó bajo el mínimo a RIR 0, sugiere bajar; si no, mantener
-// y buscar +1 rep. Alineado con el Sistema Maestro Físico de Alejandro (Parte 6).
-export function suggestNextSet(lastSet, exercise) {
-  if (!lastSet) return { text: 'Sin historial. Arranca conservador.', cls: '' };
-  if (exercise.tipo !== 'peso') return { text: 'Última vez: ' + lastSet.reps + ' seg.', cls: '' };
-  const inc = lastSet.unidad === 'lb' ? (exercise.incremento_lb || 5) : (exercise.incremento_kg || 2.5);
-  const atTop = exercise.rep_max != null && lastSet.reps >= exercise.rep_max && (lastSet.rir == null || lastSet.rir >= 1);
-  const belowMin = exercise.rep_min != null && lastSet.reps < exercise.rep_min && (lastSet.rir || 0) === 0;
-  if (atTop) return { text: '⬆️ Sube a ' + round2(lastSet.peso + inc) + ' ' + lastSet.unidad, cls: 'up' };
-  if (belowMin) return { text: '⬇️ Baja a ' + round2(Math.max(0, lastSet.peso - inc)) + ' ' + lastSet.unidad, cls: 'warn' };
-  return { text: 'Mantén ' + lastSet.peso + ' ' + lastSet.unidad + ', busca +1 rep', cls: '' };
+const LB_TO_KG = 0.45359237;
+
+// Convierte a kg — mismo factor que Core.gs::computePesoKg, para que el 1RM
+// estimado del cliente sea consistente con `peso_kg` calculado en el backend.
+export function toKg(peso, unidad) {
+  if (peso == null) return null;
+  return unidad === 'lb' ? peso * LB_TO_KG : peso;
+}
+
+// 1RM estimado (Epley ajustado por RIR, Sistema Maestro Físico Parte 9.2):
+// peso_kg * (1 + (reps + rir) / 30). rir null se trata como 0 (conservador:
+// no asume margen que no se registró).
+export function epley1RM(pesoKg, reps, rir) {
+  if (pesoKg == null || reps == null) return null;
+  const r = rir != null ? rir : 0;
+  return pesoKg * (1 + (reps + r) / 30);
+}
+
+// "Semana N / M" — el bloque y la semana los controla Alejandro a mano (no se
+// derivan del calendario): entrena de forma asíncrona (si falta un día,
+// retoma el mismo día de rutina al siguiente), así que una semana de rutina
+// no equivale a 7 días de calendario.
+export function blockLabel(sem, blockWeeks) {
+  const total = blockWeeks || 12;
+  const n = sem || 1;
+  return 'Semana ' + n + ' / ' + total;
+}
+
+// Agrupa las series NO borradas de un ejercicio por fecha ("sesión" = todas
+// las series de ese ejercicio hechas el mismo día), excluyendo opcionalmente
+// una fecha (típicamente hoy — para que "la vez pasada" no se contamine con
+// series que ya registraste en la sesión en curso). Ordenadas de la más
+// reciente a la más antigua; dentro de cada sesión, por set_index ascendente
+// (así sets[0] es la primera serie de esa sesión y sets[sets.length-1] la
+// última). Base tanto de `lastSessionSetFor` como del motor de progresión
+// (Parte 6) en `suggestNextSet`.
+export function groupSessionsFor(byId, exerciseId, excludeFecha) {
+  const byFecha = new Map();
+  for (const r of Object.values(byId || {})) {
+    if (r.exercise_id !== exerciseId || r.deleted_at) continue;
+    if (excludeFecha && r.fecha === excludeFecha) continue;
+    if (!byFecha.has(r.fecha)) byFecha.set(r.fecha, []);
+    byFecha.get(r.fecha).push(r);
+  }
+  const sessions = [...byFecha.entries()].map(([fecha, sets]) => ({
+    fecha,
+    sem: sets[0].sem != null ? sets[0].sem : null,
+    sets: sets.slice().sort((a, b) => (a.set_index || 0) - (b.set_index || 0))
+  }));
+  sessions.sort((a, b) => (a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0));
+  return sessions;
+}
+
+// La última serie registrada de la sesión anterior más reciente de un
+// ejercicio (excluyendo `excludeFecha`, típicamente hoy) — o null si no hay
+// historial previo. Es la base de "Última vez: …" en la UI. Distinto de
+// `lastSetFor`: ese incluye el día de hoy a propósito (sirve para el
+// pre-relleno/"= que la vez pasada" dentro de la MISMA sesión en curso); este
+// existe específicamente para comparar contra una sesión distinta.
+export function lastSessionSetFor(byId, exerciseId, excludeFecha) {
+  const sessions = groupSessionsFor(byId, exerciseId, excludeFecha);
+  if (!sessions.length) return null;
+  const sets = sessions[0].sets;
+  return sets[sets.length - 1];
+}
+
+// Sugerencia de progresión — motor de doble progresión del Sistema Maestro
+// Físico (Parte 6), evaluado sobre la ÚLTIMA SESIÓN COMPLETA del ejercicio
+// (todas sus series, no solo una). Acepta un array de series (orden por
+// set_index) o, por compatibilidad, una sola serie suelta (se trata como
+// sesión de una única serie — mismo comportamiento que la versión anterior
+// de esta función).
+//
+// Reglas aplicadas (Parte 6, en este orden):
+//  1. SUBIR PESO — todas las series de la sesión llegaron al tope del rango
+//     con RIR ≥ objetivo → +incremento del ejercicio.
+//  2. MANTENER (regla 3 del sistema) — solo la PRIMERA serie llegó al tope →
+//     mismo peso, sube reps en el resto.
+//  3. BAJAR PESO — todas las series quedaron bajo el fondo del rango a RIR 0.
+//     (Simplificado a la sesión más reciente: la regla original pide 2
+//     sesiones seguidas por seguridad; esta versión mantiene el mismo nivel
+//     de conservadurismo que la implementación anterior, no es una regresión.)
+//  4. SUBIR REPS (regla 2, estado normal) — ninguna de las anteriores →
+//     mantener peso, buscar +1 rep.
+export function suggestNextSet(prevSets, exercise) {
+  const sets = Array.isArray(prevSets) ? prevSets.filter(Boolean) : (prevSets ? [prevSets] : []);
+  if (!sets.length) return { text: 'Sin historial. Arranca conservador.', cls: '' };
+  const last = sets[sets.length - 1];
+  if (exercise.tipo !== 'peso') return { text: 'Última vez: ' + last.reps + ' seg.', cls: '' };
+
+  const objetivoRir = exercise.rir != null ? exercise.rir : 1;
+  const inc = last.unidad === 'lb' ? (exercise.incremento_lb || 5) : (exercise.incremento_kg || 2.5);
+  const atTop = (s) => exercise.rep_max != null && s.reps >= exercise.rep_max && (s.rir == null || s.rir >= objetivoRir);
+  const belowMin = (s) => exercise.rep_min != null && s.reps < exercise.rep_min && (s.rir || 0) <= 0;
+
+  const allAtTop = sets.every(atTop);
+  const onlyFirstAtTop = sets.length > 1 && atTop(sets[0]) && sets.slice(1).every((s) => !atTop(s));
+  const allBelowMin = sets.every(belowMin);
+
+  if (allAtTop) return { text: '⬆️ Sube a ' + round2(last.peso + inc) + ' ' + last.unidad, cls: 'up' };
+  if (onlyFirstAtTop) return { text: 'Mantén ' + last.peso + ' ' + last.unidad + ' — sube reps en el resto de series', cls: '' };
+  if (allBelowMin) return { text: '⬇️ Baja a ' + round2(Math.max(0, last.peso - inc)) + ' ' + last.unidad, cls: 'warn' };
+  return { text: 'Mantén ' + last.peso + ' ' + last.unidad + ', busca +1 rep', cls: '' };
 }
 
 export function todayISO(d) {
@@ -525,13 +622,26 @@ if (typeof document !== 'undefined') {
     checkinsById: {}, // session_id -> fila (fase 7)
     corporalByFecha: {}, // fecha -> fila (fase 7)
     checkinForm: { energia: null, pump: null, tecnica: null, sueno: '', comentario: '' },
-    corporalForm: null // se inicializa en defaultsForCorporal() al primer render
+    corporalForm: null, // se inicializa en defaultsForCorporal() al primer render
+    currentSem: 1, // semana ACTUAL dentro del bloque — la controla Alejandro a mano, no el calendario
+    blockNum: 1,
+    blockWeeks: 12
   };
 
   const $ = (sel) => document.querySelector(sel);
 
+  // Persistencia robusta de la URL del Apps Script: localStorage es la lectura
+  // rápida de siempre, pero la PWA instalada en iOS ("Añadir a inicio") corre
+  // en un contenedor de almacenamiento separado del Safari de navegación, así
+  // que localStorage puede llegar vacío ahí aunque ya se haya guardado antes.
+  // `meta` (IndexedDB) es la copia de respaldo: se restaura sola al boot (ver
+  // DOMContentLoaded) y se escribe en paralelo en cada guardado.
   function getUrl() { return localStorage.getItem(LS_URL) || ''; }
-  function setUrl(v) { localStorage.setItem(LS_URL, v.trim()); }
+  async function setUrl(v) {
+    const trimmed = v.trim();
+    localStorage.setItem(LS_URL, trimmed);
+    if (db) await setMeta(db, 'apps_script_url', trimmed);
+  }
 
   function applyTheme() {
     document.documentElement.setAttribute('data-theme', localStorage.getItem(LS_THEME) || '');
@@ -590,6 +700,51 @@ if (typeof document !== 'undefined') {
     renderExerciseList();
   }
 
+  // Indicador de semana/bloque (§0.A del plan) — Alejandro lo controla a mano
+  // con ▲▼, no se deriva del calendario (entrena de forma asíncrona: si falta
+  // un día, retoma el mismo día de rutina al siguiente).
+  function renderBlockBar() {
+    $('#blockBar').innerHTML = `
+      <button type="button" data-block-act="down" aria-label="Semana anterior">−</button>
+      <span>Bloque ${state.blockNum} · ${blockLabel(state.currentSem, state.blockWeeks)}</span>
+      <button type="button" data-block-act="up" aria-label="Semana siguiente">+</button>
+    `;
+    $('#blockBar').querySelectorAll('[data-block-act]').forEach((btn) => {
+      btn.addEventListener('click', () => handleBlockAction(btn.dataset.blockAct));
+    });
+  }
+
+  async function handleBlockAction(act) {
+    if (act === 'up') state.currentSem = Math.min(state.blockWeeks, state.currentSem + 1);
+    else if (act === 'down') state.currentSem = Math.max(1, state.currentSem - 1);
+    await setMeta(db, 'current_sem', state.currentSem);
+    renderBlockBar();
+    renderExerciseList(); // la sugerencia/última-vez no cambia, pero el peso guardado sí llevará esta semana
+  }
+
+  // "Empezar bloque limpio": soft-delete de todas las series activas locales
+  // (no se pierden del historial en el Sheet — quedan con deleted_at, igual
+  // que un borrado manual) + reinicia el contador a Semana 1. Se usa ahora
+  // para descartar las series de prueba, y a futuro al cerrar un bloque real
+  // (el número de bloque en sí se ajusta a mano en Ajustes, no aquí — evita
+  // etiquetar "Bloque 2" algo que en realidad es solo limpieza de pruebas).
+  async function onResetBlock() {
+    const activos = Object.values(state.byId).filter((r) => !r.deleted_at);
+    if (!confirm('¿Empezar bloque limpio? Se van a borrar (soft-delete) ' + activos.length + ' serie(s) activa(s) y la semana vuelve a 1. No se pierden del historial en el Sheet.')) return;
+    for (const s of activos) {
+      const del = buildDeleteMutation(s);
+      state.byId[s.set_id] = del;
+      await persistSetOptimistic(db, del);
+    }
+    state.currentSem = 1;
+    await setMeta(db, 'current_sem', state.currentSem);
+    renderBlockBar();
+    renderExerciseList();
+    renderLog();
+    toast('✓ Bloque reiniciado');
+    triggerSync();
+  }
+
   function renderDayTabs() {
     $('#dayTabs').innerHTML = state.days.map((d, i) =>
       `<button class="${i === state.currentDayIdx ? 'on' : ''}" data-day="${i}">${d.label}</button>`
@@ -626,6 +781,37 @@ if (typeof document !== 'undefined') {
     };
   }
 
+  // "Última vez (Sem N): 60 kg × 8 @ RIR 1 · 1RM est 78 kg (+2.3% vs Sem 2)" —
+  // presentacional, DOM-only (no se testea en Node, ver README). Usa
+  // `groupSessionsFor` (excluye hoy) para no comparar la sesión en curso
+  // contra sí misma; el Δ1RM sale de comparar la última sesión contra la
+  // anterior a esa (si existe).
+  function formatLastTimeInfo(sessions, ex) {
+    if (!sessions.length) return '';
+    const last = sessions[0];
+    const lastSet = last.sets[last.sets.length - 1];
+    const semTxt = last.sem != null ? ('Sem ' + last.sem) : last.fecha;
+    let line = 'Última vez (' + semTxt + '): ' + lastSet.peso + ' ' + lastSet.unidad + ' × ' + lastSet.reps +
+      (lastSet.rir != null ? ' @ RIR ' + lastSet.rir : '');
+    if (ex.tipo === 'peso') {
+      const rmLast = epley1RM(toKg(lastSet.peso, lastSet.unidad), lastSet.reps, lastSet.rir);
+      if (rmLast != null) {
+        if (sessions[1]) {
+          const prevSet = sessions[1].sets[sessions[1].sets.length - 1];
+          const rmPrev = epley1RM(toKg(prevSet.peso, prevSet.unidad), prevSet.reps, prevSet.rir);
+          if (rmPrev) {
+            const delta = ((rmLast - rmPrev) / rmPrev) * 100;
+            const prevSemTxt = sessions[1].sem != null ? ('Sem ' + sessions[1].sem) : sessions[1].fecha;
+            line += ' · 1RM est ' + round2(rmLast) + ' kg (' + (delta >= 0 ? '+' : '') + round2(delta) + '% vs ' + prevSemTxt + ')';
+          }
+        } else {
+          line += ' · 1RM est ' + round2(rmLast) + ' kg';
+        }
+      }
+    }
+    return line;
+  }
+
   function renderExerciseList() {
     const list = $('#exList');
     const day = state.days[state.currentDayIdx];
@@ -634,29 +820,36 @@ if (typeof document !== 'undefined') {
       const isOpen = state.openIdx === i;
       const done = setsToday(ex.exercise_id);
       const pill = `<div class="setpill${done >= ex.series ? ' done' : ''}">${done}/${ex.series}</div>`;
+      const isIndicator = INDICATOR_EXERCISE_IDS.includes(ex.exercise_id);
       const head = `<div class="exhead" data-idx="${i}" data-act="toggle">
-          <div><div class="exname">${ex.nombre}</div><div class="plan">${planSummary(ex)}</div></div>
+          <div><div class="exname">${isIndicator ? '🎯 ' : ''}${ex.nombre}</div><div class="plan">${planSummary(ex)}</div></div>
           ${pill}
         </div>`;
       if (!isOpen) return `<div class="card" data-idx="${i}">${head}</div>`;
 
       if (!state.curForm[ex.exercise_id]) state.curForm[ex.exercise_id] = defaultsFor(ex);
       const f = state.curForm[ex.exercise_id];
-      const last = lastSetFor(state.byId, ex.exercise_id);
-      const sug = suggestNextSet(last, ex);
+      const last = lastSetFor(state.byId, ex.exercise_id); // incluye hoy — base del pre-relleno/"= que la vez pasada"
+      const sessions = groupSessionsFor(state.byId, ex.exercise_id, todayISO()); // excluye hoy — base de la comparación
+      const sug = suggestNextSet(sessions[0] ? sessions[0].sets : null, ex);
+      const lastInfo = formatLastTimeInfo(sessions, ex);
       const isPeso = ex.tipo === 'peso';
       const repsLabel = ex.tipo === 'tiempo' ? 'Segundos' : 'Reps';
 
       return `<div class="card open" data-idx="${i}">
         ${head}
         <div class="exbody">
+          ${lastInfo ? `<div class="lastinfo">${lastInfo}</div>` : ''}
           <div class="sug ${sug.cls}">${sug.text}</div>
           ${isPeso ? `
           <div class="frow"><div class="flab">Peso</div><div class="step">
             <button type="button" data-idx="${i}" data-act="stepdown-peso">−</button>
             <input type="number" inputmode="decimal" id="peso${i}" value="${f.peso}">
             <button type="button" data-idx="${i}" data-act="stepup-peso">+</button>
-            <button type="button" class="ubtn${f.unidad === 'lb' ? ' lb' : ''}" data-idx="${i}" data-act="toggleunit">${f.unidad}</button>
+          </div></div>
+          <div class="frow"><div class="flab">Unidad</div><div class="unit-seg">
+            <button type="button" class="${f.unidad === 'kg' ? 'on' : ''}" data-idx="${i}" data-act="setunit" data-v="kg">kg</button>
+            <button type="button" class="${f.unidad === 'lb' ? 'on' : ''}" data-idx="${i}" data-act="setunit" data-v="lb">lb</button>
           </div></div>` : ''}
           <div class="frow"><div class="flab">${repsLabel}</div><div class="step">
             <button type="button" data-idx="${i}" data-act="stepdown-reps">−</button>
@@ -728,8 +921,8 @@ if (typeof document !== 'undefined') {
     } else if (act === 'stepup-reps' || act === 'stepdown-reps') {
       const dir = act === 'stepup-reps' ? 1 : -1;
       f.reps = Math.max(0, (Number(f.reps) || 0) + dir);
-    } else if (act === 'toggleunit') {
-      f.unidad = f.unidad === 'lb' ? 'kg' : 'lb';
+    } else if (act === 'setunit') {
+      f.unidad = v === 'lb' ? 'lb' : 'kg';
     } else if (act === 'rir') {
       f.rir = Number(v);
     } else if (act === 'dolor') {
@@ -756,6 +949,7 @@ if (typeof document !== 'undefined') {
       exercise_id: ex.exercise_id,
       set_index: setsToday(ex.exercise_id) + 1, // 1..n dentro del ejercicio/SESIÓN (no histórico total)
       dia: day.dia,
+      sem: state.currentSem, // semana ACTUAL del bloque, controlada a mano (ver renderBlockBar)
       peso: isPeso ? f.peso : 0,
       unidad: isPeso ? f.unidad : ex.unidad_default,
       reps: f.reps,
@@ -957,18 +1151,47 @@ if (typeof document !== 'undefined') {
   window.addEventListener('DOMContentLoaded', async () => {
     applyTheme();
     $('#themeBtn').addEventListener('click', () => toggleTheme());
-    $('#urlInput').value = getUrl();
-    $('#urlInput').addEventListener('change', (e) => setUrl(e.target.value));
     $('#syncBtn').addEventListener('click', () => triggerSync());
     $('#status').addEventListener('click', () => triggerSync()); // "toca para reintentar" (§4.5)
 
     db = await openDB();
+
+    // Persistencia robusta de la URL (§0.C del plan): si localStorage llegó
+    // vacío (típico al abrir por primera vez la PWA YA INSTALADA en iOS, cuyo
+    // contenedor de almacenamiento es distinto al de Safari normal), se
+    // restaura desde la copia en `meta` guardada la vez anterior.
+    if (!getUrl()) {
+      const savedUrl = await getMeta(db, 'apps_script_url', '');
+      if (savedUrl) localStorage.setItem(LS_URL, savedUrl);
+    }
+    $('#urlInput').value = getUrl();
+    $('#urlInput').addEventListener('change', async (e) => { await setUrl(e.target.value); });
+
     const hydrated = await hydrateFromDB(db);
     state.byId = hydrated.byId;
     state.checkinsById = hydrated.checkinsById;
     state.corporalByFecha = hydrated.corporalByFecha;
     state.lastSeq = hydrated.meta.last_seq || 0;
+    state.currentSem = hydrated.meta.current_sem || 1;
+    state.blockNum = hydrated.meta.block_num || 1;
+    state.blockWeeks = hydrated.meta.block_weeks || 12;
     state.corporalForm = defaultsForCorporal();
+
+    $('#blockNumInput').value = state.blockNum;
+    $('#blockNumInput').addEventListener('change', async (e) => {
+      state.blockNum = Math.max(1, parseInt(e.target.value, 10) || 1);
+      await setMeta(db, 'block_num', state.blockNum);
+      renderBlockBar();
+    });
+    $('#blockWeeksInput').value = state.blockWeeks;
+    $('#blockWeeksInput').addEventListener('change', async (e) => {
+      state.blockWeeks = Math.max(1, parseInt(e.target.value, 10) || 12);
+      state.currentSem = Math.min(state.currentSem, state.blockWeeks);
+      await setMeta(db, 'block_weeks', state.blockWeeks);
+      await setMeta(db, 'current_sem', state.currentSem);
+      renderBlockBar();
+    });
+    $('#resetBlockBtn').addEventListener('click', () => onResetBlock());
 
     let routineRows = hydrated.meta.rutina;
     let catalogRows = hydrated.meta.catalogo;
@@ -980,6 +1203,7 @@ if (typeof document !== 'undefined') {
     }
     state.days = buildRoutineFromRows(routineRows, catalogRows);
 
+    renderBlockBar();
     renderDayTabs();
     renderExerciseList();
     renderLog();

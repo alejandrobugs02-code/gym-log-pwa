@@ -65,6 +65,10 @@ header h1 { font-size: 15px; font-weight: 700; }
 
 .wrap { padding: 0 14px; }
 
+/* Indicador de semana/bloque (§0.A) — controlado a mano, no por calendario */
+.blockbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 14px 14px; padding: 8px 10px; border-radius: 10px; background: var(--line2); font-size: 13px; font-weight: 700; color: var(--txt); }
+.blockbar button { width: 34px; height: 34px; min-width: 44px; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 18px; font-weight: 700; color: var(--acc); cursor: pointer; flex-shrink: 0; }
+
 /* Selector de día — objetivos táctiles grandes, una mano */
 .dayTabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
 .dayTabs button {
@@ -84,6 +88,9 @@ header h1 { font-size: 15px; font-weight: 700; }
 .exbody { display: none; border-top: 1px solid var(--line2); padding: 12px 14px 14px; }
 .card.open .exbody { display: block; }
 
+/* "Última vez" + 1RM (§0.B) — encima de la sugerencia, tono neutro/discreto */
+.lastinfo { font-size: 12px; line-height: 1.4; color: var(--mut); margin-bottom: 8px; }
+
 .sug { font-size: 13px; line-height: 1.4; background: var(--sugbg); border: 1px solid var(--sugln); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
 .sug.up { background: var(--upbg); border-color: var(--upln); }
 .sug.warn { background: var(--warnbg); border-color: var(--warnln); }
@@ -101,8 +108,16 @@ header h1 { font-size: 15px; font-weight: 700; }
   flex: 1; min-width: 0; height: 50px; text-align: center; font-size: 19px; font-weight: 700;
   border: 1px solid var(--line); border-radius: 12px; background: var(--in); color: var(--txt);
 }
-.ubtn { width: 50px; height: 50px; min-width: 44px; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 13px; font-weight: 800; color: var(--mut); cursor: pointer; flex-shrink: 0; }
-.ubtn.lb { background: var(--accbg); border-color: var(--acc); color: var(--acc); }
+
+/* Unidad kg/lb — fila propia con control segmentado (fix: antes vivía apretujado
+   dentro de .step junto a los steppers de peso y en vertical se recortaba fuera
+   de pantalla por el overflow:hidden de .card, quedando intocable). */
+.unit-seg { display: flex; flex: 1; gap: 6px; }
+.unit-seg button {
+  flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--card); font-size: 14px; font-weight: 800; color: var(--mut); cursor: pointer;
+}
+.unit-seg button.on { background: var(--accbg); border-color: var(--acc); color: var(--acc); }
 
 /* RIR y dolor como chips — sin teclado (plan §9.1) */
 .chips { display: flex; gap: 5px; flex: 1; flex-wrap: wrap; }

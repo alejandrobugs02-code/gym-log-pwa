@@ -22,6 +22,7 @@
 <div id="status" class="status">Sin sincronizar</div>
 
 <div class="wrap">
+  <div id="blockBar" class="blockbar"></div>
   <div id="dayTabs" class="dayTabs"></div>
   <div id="exList"></div>
 
@@ -45,6 +46,12 @@
     <label for="urlInput">URL del Apps Script (/exec)</label>
     <input type="url" id="urlInput" placeholder="https://script.google.com/.../exec">
     <button id="syncBtn" type="button">☁️ Sincronizar ahora</button>
+
+    <label for="blockNumInput" style="margin-top:14px;display:block">Bloque actual (número)</label>
+    <input type="number" id="blockNumInput" min="1" step="1">
+    <label for="blockWeeksInput">Largo del bloque (semanas)</label>
+    <input type="number" id="blockWeeksInput" min="1" step="1">
+    <button id="resetBlockBtn" type="button">🧹 Empezar bloque limpio</button>
   </div>
 </div>
 
