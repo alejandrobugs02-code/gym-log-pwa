@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#101218">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gym Log">
+<title>Gym Log v2 — Alejandro</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<header>
+  <h1>🏋️ Gym Log v2</h1>
+  <button id="themeBtn" class="themeBtn" aria-label="Cambiar tema" type="button">🌓</button>
+</header>
+
+<div id="status" class="status">Sin sincronizar</div>
+
+<div class="wrap">
+  <div id="dayTabs" class="dayTabs"></div>
+  <div id="exList"></div>
+
+  <h2>Registradas (local)</h2>
+  <table>
+    <thead><tr><th>Ejercicio</th><th>#</th><th>Peso</th><th>Reps</th><th>RIR</th><th></th></tr></thead>
+    <tbody id="log"></tbody>
+  </table>
+
+  <h2>Peso corporal de hoy</h2>
+  <div class="card" style="padding:12px">
+    <div id="corporalPanel"></div>
+  </div>
+
+  <h2>Check-in de sesión</h2>
+  <div class="card" style="padding:12px">
+    <div id="checkinPanel"></div>
+  </div>
+
+  <div class="settings">
+    <label for="urlInput">URL del Apps Script (/exec)</label>
+    <input type="url" id="urlInput" placeholder="https://script.google.com/.../exec">
+    <button id="syncBtn" type="button">☁️ Sincronizar ahora</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
