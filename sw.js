@@ -2,19 +2,19 @@
 // estáticos para que la PWA abra offline en el iPhone. NO intercepta llamadas
 // al Apps Script (otro origen) — el offline de datos ya lo resuelve IndexedDB
 // + outbox (app.js), esto es solo para que la página misma cargue sin red.
-const CACHE_NAME = 'gymv2-shell-v1';
+const CACHE_NAME = 'gymv2-shell-v3-ciclos';
 const SHELL_FILES = [
   './',
   './index.html',
   './app.js',
   './app.css',
   './manifest.webmanifest',
-  './data/rutina-6dias.json',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-512-maskable.png'
 ];
+const SHELL_URLS = new Set(SHELL_FILES.map((path) => new URL(path, self.registration.scope).href));
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -36,13 +36,21 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return; // deja pasar Apps Script tal cual
   if (event.request.method !== 'GET') return;
+  url.search = '';
+  url.hash = '';
+  const cacheKey = event.request.mode === 'navigate'
+    ? new URL('./index.html', self.registration.scope).href
+    : url.href;
+  if (!SHELL_URLS.has(cacheKey)) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.match(cacheKey).then((cached) => {
       const network = fetch(event.request)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(cacheKey, copy));
+          }
           return res;
         })
         .catch(() => cached);

@@ -67,7 +67,18 @@ header h1 { font-size: 15px; font-weight: 700; }
 
 /* Indicador de semana/bloque (§0.A) — controlado a mano, no por calendario */
 .blockbar { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 14px 14px; padding: 8px 10px; border-radius: 10px; background: var(--line2); font-size: 13px; font-weight: 700; color: var(--txt); }
+.block-copy { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.block-copy span { color: var(--mut); font-size: 11px; font-weight: 600; }
 .blockbar button { width: 34px; height: 34px; min-width: 44px; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 18px; font-weight: 700; color: var(--acc); cursor: pointer; flex-shrink: 0; }
+
+.session-card { padding: 14px; }
+.session-card h2 { margin: 0 0 10px; }
+.session-detail { margin: 5px 0 12px; color: var(--mut); font-size: 12px; line-height: 1.4; }
+.session-actions { display: grid; gap: 8px; }
+.sequence-reason, .checkin-comment {
+  width: 100%; min-height: 66px; resize: vertical; padding: 10px; margin: 6px 0 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--in); color: var(--txt); font: inherit;
+}
 
 /* Selector de día — objetivos táctiles grandes, una mano */
 .dayTabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -77,6 +88,7 @@ header h1 { font-size: 15px; font-weight: 700; }
   font-size: 12.5px; font-weight: 700; color: var(--mut); cursor: pointer;
 }
 .dayTabs button.on { background: var(--acc); border-color: var(--acc); color: #fff; }
+.dayTabs button:disabled { opacity: .42; cursor: not-allowed; }
 
 /* Acordeón de ejercicios */
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
@@ -128,6 +140,7 @@ header h1 { font-size: 15px; font-weight: 700; }
 .samebtn { width: 100%; min-height: 44px; padding: 10px; margin-bottom: 10px; border: 1px dashed var(--line); border-radius: 12px; background: var(--in); color: var(--mut); font-size: 13px; font-weight: 600; cursor: pointer; }
 .save { width: 100%; height: 54px; min-height: 44px; border: none; border-radius: 14px; background: var(--acc); color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; }
 .save:active { opacity: .85; }
+.save:disabled { opacity: .5; cursor: not-allowed; }
 
 h2 { font-size: 14px; font-weight: 800; margin: 18px 2px 10px; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--card); border-radius: 12px; overflow: hidden; }
@@ -136,9 +149,23 @@ th { background: var(--line2); font-size: 11px; color: var(--mut); text-transfor
 tr.rowerr td { border-left: 3px solid var(--pain); }
 
 .settings { margin-top: 20px; font-size: 12px; }
-.settings label { font-weight: 700; color: var(--mut); }
+.settings label { display: block; margin-top: 12px; font-weight: 700; color: var(--mut); }
 .settings input { width: 100%; min-height: 44px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--in); color: var(--txt); margin-top: 4px; font-size: 14px; }
 .settings button { margin-top: 10px; min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--txt); font-size: 13px; }
+.settings .device-pair-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.settings .device-pair-row button { margin-top: 4px; white-space: nowrap; }
+.sync-issues { margin-top: 12px; display: grid; gap: 8px; }
+.sync-issue { border: 1px solid var(--pain); border-radius: 10px; padding: 10px; background: color-mix(in srgb, var(--pain) 8%, var(--card)); }
+.sync-issue strong, .sync-issue span { display: block; overflow-wrap: anywhere; }
+.sync-issue-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.context-card { padding: 12px; }
+.context-section + .context-section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.context-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.context-field label { display: block; color: var(--mut); font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+.context-field input, .context-field select, .context-field textarea { width: 100%; min-height: 44px; padding: 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--in); color: var(--txt); }
+.context-field textarea { min-height: 72px; resize: vertical; }
+.context-save { width: 100%; min-height: 44px; margin-top: 10px; border: 0; border-radius: 10px; background: var(--acc); color: #fff; font-weight: 800; }
+@media (max-width: 420px) { .context-grid { grid-template-columns: 1fr; } }
 .note { font-size: 12px; color: var(--mut); padding: 20px 0; text-align: center; }
 
 /* Toast de confirmación al guardar */

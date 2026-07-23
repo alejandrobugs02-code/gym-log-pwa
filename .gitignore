@@ -1,9 +1,0 @@
-# Salvaguarda: este repo es SOLO el frontend estático de Gym Log v2.
-# Nada de esto debería copiarse aquí jamás (datos personales / tooling de dev
-# del repo fuente en el vault) — si aparece, es un error de publish-pwa.ps1.
-backend/
-test/
-node_modules/
-package.json
-package-lock.json
-*.gs

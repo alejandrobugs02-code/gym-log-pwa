@@ -7,7 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gym Log">
-<title>Gym Log v2 — Alejandro</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Gym Log — rutina flexible</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
@@ -23,6 +24,10 @@
 
 <div class="wrap">
   <div id="blockBar" class="blockbar"></div>
+  <section class="card session-card" aria-labelledby="sessionTitle">
+    <h2 id="sessionTitle">Sesión y ciclo</h2>
+    <div id="sessionPanel"></div>
+  </section>
   <div id="dayTabs" class="dayTabs"></div>
   <div id="exList"></div>
 
@@ -42,16 +47,34 @@
     <div id="checkinPanel"></div>
   </div>
 
+  <h2>Recuperación y nutrición de hoy</h2>
+  <div class="card context-card">
+    <div id="dailyContextPanel"></div>
+  </div>
+
+  <h2>Evento extraordinario (opcional)</h2>
+  <div class="card context-card">
+    <div id="extraordinaryPanel"></div>
+  </div>
+
   <div class="settings">
     <label for="urlInput">URL del Apps Script (/exec)</label>
     <input type="url" id="urlInput" placeholder="https://script.google.com/.../exec">
+    <label for="deviceIdOutput">ID de este dispositivo (para emparejar)</label>
+    <div class="device-pair-row">
+      <input type="text" id="deviceIdOutput" readonly aria-readonly="true">
+      <button id="copyDeviceIdBtn" type="button">Copiar ID</button>
+    </div>
+    <label for="tokenInput">Token de este dispositivo</label>
+    <input type="password" id="tokenInput" autocomplete="off" placeholder="Se guarda solo en este dispositivo">
+    <label for="personIdInput">ID de persona</label>
+    <input type="text" id="personIdInput" autocomplete="off" placeholder="Se entrega durante el emparejamiento">
+    <div id="syncIssuesPanel" class="sync-issues" aria-live="polite"></div>
     <button id="syncBtn" type="button">☁️ Sincronizar ahora</button>
 
-    <label for="blockNumInput" style="margin-top:14px;display:block">Bloque actual (número)</label>
-    <input type="number" id="blockNumInput" min="1" step="1">
     <label for="blockWeeksInput">Largo del bloque (semanas)</label>
-    <input type="number" id="blockWeeksInput" min="1" step="1">
-    <button id="resetBlockBtn" type="button">🧹 Empezar bloque limpio</button>
+    <input type="number" id="blockWeeksInput" min="1" max="52" step="1" value="12">
+    <button id="newBlockBtn" type="button">Iniciar bloque nuevo (conservar historial)</button>
   </div>
 </div>
 
