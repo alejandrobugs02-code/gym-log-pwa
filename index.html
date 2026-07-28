@@ -3,83 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#101218">
+<meta name="theme-color" content="#0b0d12">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gym Log">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Gym Log — rutina flexible</title>
+<meta name="apple-mobile-web-app-title" content="Gym">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Gym</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="stylesheet" href="./app.css">
 </head>
 <body>
-<header>
-  <h1>🏋️ Gym Log v2</h1>
-  <button id="themeBtn" class="themeBtn" aria-label="Cambiar tema" type="button">🌓</button>
-</header>
 
-<div id="status" class="status">Sin sincronizar</div>
+<main id="view" class="view" aria-live="polite"></main>
 
-<div class="wrap">
-  <div id="blockBar" class="blockbar"></div>
-  <section class="card session-card" aria-labelledby="sessionTitle">
-    <h2 id="sessionTitle">Sesión y ciclo</h2>
-    <div id="sessionPanel"></div>
-  </section>
-  <div id="dayTabs" class="dayTabs"></div>
-  <div id="exList"></div>
-
-  <h2>Registradas (local)</h2>
-  <table>
-    <thead><tr><th>Ejercicio</th><th>#</th><th>Peso</th><th>Reps</th><th>RIR</th><th></th></tr></thead>
-    <tbody id="log"></tbody>
-  </table>
-
-  <h2>Peso corporal de hoy</h2>
-  <div class="card" style="padding:12px">
-    <div id="corporalPanel"></div>
-  </div>
-
-  <h2>Check-in de sesión</h2>
-  <div class="card" style="padding:12px">
-    <div id="checkinPanel"></div>
-  </div>
-
-  <h2>Recuperación y nutrición de hoy</h2>
-  <div class="card context-card">
-    <div id="dailyContextPanel"></div>
-  </div>
-
-  <h2>Evento extraordinario (opcional)</h2>
-  <div class="card context-card">
-    <div id="extraordinaryPanel"></div>
-  </div>
-
-  <div class="settings">
-    <label for="urlInput">URL del Apps Script (/exec)</label>
-    <input type="url" id="urlInput" placeholder="https://script.google.com/.../exec">
-    <label for="deviceIdOutput">ID de este dispositivo (para emparejar)</label>
-    <div class="device-pair-row">
-      <input type="text" id="deviceIdOutput" readonly aria-readonly="true">
-      <button id="copyDeviceIdBtn" type="button">Copiar ID</button>
-    </div>
-    <label for="tokenInput">Token de este dispositivo</label>
-    <input type="password" id="tokenInput" autocomplete="off" placeholder="Se guarda solo en este dispositivo">
-    <label for="personIdInput">ID de persona</label>
-    <input type="text" id="personIdInput" autocomplete="off" placeholder="Se entrega durante el emparejamiento">
-    <div id="syncIssuesPanel" class="sync-issues" aria-live="polite"></div>
-    <button id="syncBtn" type="button">☁️ Sincronizar ahora</button>
-
-    <label for="blockWeeksInput">Largo del bloque (semanas)</label>
-    <input type="number" id="blockWeeksInput" min="1" max="52" step="1" value="12">
-    <button id="newBlockBtn" type="button">Iniciar bloque nuevo (conservar historial)</button>
-  </div>
+<div id="rest" class="rest hidden" role="status" aria-live="polite">
+  <span id="restLabel" class="rest-time">0:00</span>
+  <span class="rest-text">descanso</span>
+  <button id="restSkip" class="rest-skip" type="button" aria-label="Saltar descanso">✕</button>
 </div>
 
-<div class="toast" id="toast"></div>
+<nav class="tabs" aria-label="Secciones">
+  <button class="tab" data-tab="hoy" type="button"><span class="tab-ico">🏋️</span><span>Hoy</span></button>
+  <button class="tab" data-tab="historial" type="button"><span class="tab-ico">📈</span><span>Historial</span></button>
+  <button class="tab" data-tab="cuerpo" type="button"><span class="tab-ico">⚖️</span><span>Cuerpo</span></button>
+  <button class="tab" data-tab="ajustes" type="button"><span class="tab-ico">⚙️</span><span>Ajustes</span></button>
+</nav>
 
-<script type="module" src="./app.js"></script>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="./src/main.js"></script>
 </body>
 </html>
