@@ -68,6 +68,10 @@ p { margin: 6px 0; }
 .card.tappable { cursor: pointer; }
 .card.tappable:active { background: var(--surface-2); }
 .card.done { border-color: color-mix(in srgb, var(--good) 40%, var(--line)); }
+.card.warnbar {
+  border-color: color-mix(in srgb, var(--warn) 55%, var(--line));
+  background: color-mix(in srgb, var(--warn) 10%, var(--surface));
+}
 .card.open { border-color: var(--accent); }
 
 /* --- botones --- */

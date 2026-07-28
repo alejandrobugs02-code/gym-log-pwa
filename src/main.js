@@ -81,9 +81,22 @@ function renderIdle() {
     </div>`;
   }).join('');
 
+  const backup = store.backupStatus();
+  const warn = backup.overdue ? `
+    <div class="card tappable warnbar" data-action="go-backup">
+      <div class="row">
+        <span>⚠️</span>
+        <div class="ex-title">
+          <div class="ex-name">${backup.pending} sesiones sin respaldar</div>
+          <div class="ex-presc">${backup.never ? 'Nunca has exportado' : `Último respaldo hace ${backup.days} días`} · toca para exportar</div>
+        </div>
+      </div>
+    </div>` : '';
+
   return `
     <h1>Hoy</h1>
     <p class="sub">${recent.length ? `Última sesión ${relDay(recent[0].date)} · ${esc(recent[0].dayLabel)}` : 'Sin sesiones todavía. Empieza cuando quieras.'}</p>
+    ${warn}
 
     <div class="card">
       <div class="ex-name">${esc(day.label)} · ${esc(day.name)}</div>
@@ -427,6 +440,7 @@ function measureCard(title, rows, unit) {
 
 function renderAjustes() {
   const s = store.state;
+  const b = store.backupStatus();
   return `
     <h1>Ajustes</h1>
     <p class="sub">Gym ${APP_VERSION} · rutina ${esc(CATALOG.routineVersion)}</p>
@@ -438,8 +452,11 @@ function renderAjustes() {
     </div>
 
     <h2>Respaldo</h2>
-    <div class="card">
-      <p class="small muted">Los datos viven en este dispositivo. Exporta de vez en cuando y guarda el archivo en el vault: es también lo que leen los agentes para analizar tu entrenamiento.</p>
+    <div class="card ${b.overdue ? 'warnbar' : ''}">
+      <div class="ex-name">${b.never ? 'Nunca has exportado' : `Último respaldo: ${relDay(b.lastExportAt.slice(0, 10))}`}</div>
+      <div class="ex-presc">${b.pending === 0 ? 'Todo respaldado.' : `${b.pending} ${b.pending === 1 ? 'sesión' : 'sesiones'} sin respaldar.`}</div>
+      <div style="height:10px"></div>
+      <p class="small muted">Los datos viven solo en este dispositivo. Exporta cada semana y guarda el archivo en Drive o en el vault: es también lo que leen los agentes para analizar tu entrenamiento.</p>
       <div style="height:10px"></div>
       <button class="btn-primary" data-action="export" type="button">⬇ Exportar copia (JSON)</button>
       <div style="height:8px"></div>
@@ -701,7 +718,13 @@ document.addEventListener('click', async (ev) => {
       render();
       break;
 
-    case 'export': exportBackup(); break;
+    case 'export': await exportBackup(); render(); break;
+
+    case 'go-backup':
+      ui.tab = 'ajustes';
+      render();
+      document.querySelector('[data-action="export"]')?.scrollIntoView({ block: 'center' });
+      break;
 
     case 'rescue': {
       const { readLegacy } = await import('./rescue.js');
@@ -755,7 +778,7 @@ document.addEventListener('keydown', (ev) => {
   }
 });
 
-function exportBackup() {
+async function exportBackup() {
   const data = store.exportData();
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -766,6 +789,7 @@ function exportBackup() {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  await store.markExported();
   toast(`Exportadas ${data.counts.sets} series`);
 }
 

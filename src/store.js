@@ -37,15 +37,17 @@ export function createStore() {
 
     async init(indexedDBImpl) {
       conn = await db.openDb(indexedDBImpl);
-      const [sets, sessions, measurements, activeSessionId] = await Promise.all([
+      const [sets, sessions, measurements, activeSessionId, lastExportAt] = await Promise.all([
         db.getAll(conn, db.STORES.sets),
         db.getAll(conn, db.STORES.sessions),
         db.getAll(conn, db.STORES.measurements),
         db.getMeta(conn, 'activeSessionId', null),
+        db.getMeta(conn, 'lastExportAt', null),
       ]);
       state.sets = sets;
       state.sessions = sessions;
       state.measurements = measurements;
+      state.lastExportAt = lastExportAt;
       // Solo se considera activa si la sesión existe y sigue abierta.
       const active = sessions.find((s) => s.id === activeSessionId);
       state.activeSessionId = active && active.status === 'open' ? activeSessionId : null;
@@ -204,6 +206,29 @@ export function createStore() {
     },
 
     // --- respaldo / integración con el vault ---
+
+    /**
+     * Estado del respaldo. El único riesgo serio del diseño local-first es
+     * perder el teléfono sin haber exportado, así que la app tiene que decirlo
+     * en vez de confiar en que el usuario se acuerde.
+     */
+    backupStatus(now = Date.now()) {
+      const last = state.lastExportAt;
+      const pending = state.sessions.filter((s) => (
+        s.status !== 'open' && (!last || String(s.startedAt) > String(last))
+      )).length;
+      const days = last ? Math.floor((now - new Date(last).getTime()) / 86400000) : null;
+      // Con 6 días de rutina, 4 sesiones son ~4-5 días de entrenamiento.
+      const overdue = pending >= 4 || (pending > 0 && days !== null && days >= 7);
+      return { pending, days, lastExportAt: last, never: !last, overdue };
+    },
+
+    async markExported(when = new Date().toISOString()) {
+      state.lastExportAt = when;
+      await db.setMeta(conn, 'lastExportAt', when);
+      emit();
+      return when;
+    },
 
     exportData() {
       return {
