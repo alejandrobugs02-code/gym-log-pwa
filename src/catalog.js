@@ -1,5 +1,5 @@
 // GENERADO por build-catalog.py — no editar a mano.
-// Fuente: Personal/65_Gym/sistema-fisico/configuracion/releases/rutina-6d-flex-v1/
+// Fuente: release rutina-6d-flex-v1 (ver --config-dir con el que se genero este archivo).
 // Para cambiar la rutina: edita el release en el vault y vuelve a correr el script.
 
 export const CATALOG = {
