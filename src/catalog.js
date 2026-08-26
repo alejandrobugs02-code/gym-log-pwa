@@ -1,10 +1,10 @@
-// GENERADO por build-catalog.py — no editar a mano.
-// Fuente: release rutina-6d-flex-v1 (ver --config-dir con el que se genero este archivo).
-// Para cambiar la rutina: edita el release en el vault y vuelve a correr el script.
+// GENERADO por compile-routine.py — no editar a mano.
+// Fuente: bloque YAML de rutina-6d-flex.md.
+// Para cambiar la rutina: edita el YAML en Brain y vuelve a compilar.
 
 export const CATALOG = {
-  "releaseId": "rutina-6d-flex-v1",
-  "routineVersion": "rutina-6d-flex-v1",
+  "releaseId": "rutina-6d-flex-v2",
+  "routineVersion": "rutina-6d-flex-v2",
   "sequence": [
     "d1",
     "d2",
@@ -18,10 +18,10 @@ export const CATALOG = {
     {
       "id": "d1",
       "label": "Día 1",
-      "name": "Pecho / Hombro / Brazo",
+      "name": "Push A",
       "plan": [
         {
-          "exerciseId": "press_incl_db",
+          "exerciseId": "press_inclinado_mancuernas",
           "order": 1,
           "sets": 3,
           "repMin": 6,
@@ -33,7 +33,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "aperturas_incl_polea",
+          "exerciseId": "aperturas_inclinadas_polea",
           "order": 2,
           "sets": 2,
           "repMin": 12,
@@ -57,7 +57,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "elev_lateral_cable",
+          "exerciseId": "elevacion_lateral_polea",
           "order": 4,
           "sets": 3,
           "repMin": 15,
@@ -81,7 +81,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "ext_triceps_overhead",
+          "exerciseId": "extension_triceps_overhead",
           "order": 6,
           "sets": 2,
           "repMin": 10,
@@ -91,32 +91,20 @@ export const CATALOG = {
           "kind": "peso",
           "durationUnit": null,
           "notes": ""
-        },
-        {
-          "exerciseId": "cardio_zona2",
-          "order": 7,
-          "sets": 1,
-          "repMin": 30,
-          "repMax": 30,
-          "rir": null,
-          "restSec": 0,
-          "kind": "tiempo",
-          "durationUnit": "min",
-          "notes": "minutos"
         }
       ]
     },
     {
       "id": "d2",
       "label": "Día 2",
-      "name": "Espalda / Pierna",
+      "name": "Pull A",
       "plan": [
         {
           "exerciseId": "jalon_pecho",
           "order": 1,
           "sets": 3,
           "repMin": 8,
-          "repMax": 12,
+          "repMax": 10,
           "rir": 1,
           "restSec": 120,
           "kind": "peso",
@@ -127,10 +115,10 @@ export const CATALOG = {
           "exerciseId": "remo_pecho_apoyado",
           "order": 2,
           "sets": 3,
-          "repMin": 8,
+          "repMin": 10,
           "repMax": 12,
           "rir": 1,
-          "restSec": 120,
+          "restSec": 90,
           "kind": "peso",
           "durationUnit": null,
           "notes": ""
@@ -148,221 +136,8 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "ext_cuadriceps",
+          "exerciseId": "face_pulls",
           "order": 4,
-          "sets": 2,
-          "repMin": 12,
-          "repMax": 15,
-          "rir": 1,
-          "restSec": 75,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "curl_femoral_sentado",
-          "order": 5,
-          "sets": 2,
-          "repMin": 10,
-          "repMax": 12,
-          "rir": 1,
-          "restSec": 90,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "pantorrilla_pie",
-          "order": 6,
-          "sets": 3,
-          "repMin": 10,
-          "repMax": 15,
-          "rir": 0,
-          "restSec": 60,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        }
-      ]
-    },
-    {
-      "id": "d3",
-      "label": "Día 3",
-      "name": "Hombro / Pecho / Core",
-      "plan": [
-        {
-          "exerciseId": "press_mancuernas_sentado",
-          "order": 1,
-          "sets": 3,
-          "repMin": 8,
-          "repMax": 10,
-          "rir": 1,
-          "restSec": 120,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "elev_lateral_mancuernas",
-          "order": 2,
-          "sets": 3,
-          "repMin": 15,
-          "repMax": 20,
-          "rir": 0,
-          "restSec": 60,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "face_pull",
-          "order": 3,
-          "sets": 2,
-          "repMin": 15,
-          "repMax": 20,
-          "rir": 1,
-          "restSec": 60,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "press_plano",
-          "order": 4,
-          "sets": 2,
-          "repMin": 8,
-          "repMax": 10,
-          "rir": 1,
-          "restSec": 120,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "crunch_cable",
-          "order": 5,
-          "sets": 3,
-          "repMin": 15,
-          "repMax": 20,
-          "rir": 0,
-          "restSec": 60,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "elev_piernas_colgado",
-          "order": 6,
-          "sets": 2,
-          "repMin": 10,
-          "repMax": 15,
-          "rir": 1,
-          "restSec": 60,
-          "kind": "peso_corporal",
-          "durationUnit": null,
-          "notes": ""
-        }
-      ]
-    },
-    {
-      "id": "d4",
-      "label": "Día 4",
-      "name": "Espalda / Brazo / Gluteo",
-      "plan": [
-        {
-          "exerciseId": "jalon_ancho",
-          "order": 1,
-          "sets": 3,
-          "repMin": 8,
-          "repMax": 12,
-          "rir": 1,
-          "restSec": 120,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "remo_maquina",
-          "order": 2,
-          "sets": 3,
-          "repMin": 8,
-          "repMax": 12,
-          "rir": 1,
-          "restSec": 120,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "curl_predicador",
-          "order": 3,
-          "sets": 3,
-          "repMin": 10,
-          "repMax": 12,
-          "rir": 1,
-          "restSec": 60,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "rompecraneos",
-          "order": 4,
-          "sets": 3,
-          "repMin": 10,
-          "repMax": 12,
-          "rir": 0,
-          "restSec": 60,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "hip_thrust",
-          "order": 5,
-          "sets": 2,
-          "repMin": 8,
-          "repMax": 10,
-          "rir": 1,
-          "restSec": 120,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        }
-      ]
-    },
-    {
-      "id": "d5",
-      "label": "Día 5",
-      "name": "Pecho / Hombro / Brazo",
-      "plan": [
-        {
-          "exerciseId": "press_incl_barra",
-          "order": 1,
-          "sets": 3,
-          "repMin": 6,
-          "repMax": 10,
-          "rir": 1,
-          "restSec": 120,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "aperturas_altas_polea",
-          "order": 2,
-          "sets": 2,
-          "repMin": 12,
-          "repMax": 15,
-          "rir": 1,
-          "restSec": 75,
-          "kind": "peso",
-          "durationUnit": null,
-          "notes": ""
-        },
-        {
-          "exerciseId": "elev_lateral_maq",
-          "order": 3,
           "sets": 3,
           "repMin": 15,
           "repMax": 20,
@@ -374,7 +149,7 @@ export const CATALOG = {
         },
         {
           "exerciseId": "curl_martillo",
-          "order": 4,
+          "order": 5,
           "sets": 2,
           "repMin": 10,
           "repMax": 12,
@@ -385,50 +160,105 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "fondos_ext_triceps",
-          "order": 5,
+          "exerciseId": "press_frances",
+          "order": 6,
           "sets": 2,
-          "repMin": 8,
-          "repMax": 15,
-          "rir": 0,
-          "restSec": 90,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 1,
+          "restSec": 60,
           "kind": "peso",
           "durationUnit": null,
-          "notes": "objetivo original: fallo técnico"
-        },
-        {
-          "exerciseId": "cardio_zona2",
-          "order": 6,
-          "sets": 1,
-          "repMin": 25,
-          "repMax": 25,
-          "rir": null,
-          "restSec": 0,
-          "kind": "tiempo",
-          "durationUnit": "min",
-          "notes": "minutos"
+          "notes": ""
         }
       ]
     },
     {
-      "id": "d6",
-      "label": "Día 6",
-      "name": "Pierna / Core",
+      "id": "d3",
+      "label": "Día 3",
+      "name": "Legs A",
       "plan": [
         {
           "exerciseId": "prensa_inclinada",
           "order": 1,
           "sets": 3,
-          "repMin": 10,
+          "repMin": 8,
           "repMax": 12,
           "rir": 1,
-          "restSec": 150,
+          "restSec": 120,
           "kind": "peso",
           "durationUnit": null,
           "notes": ""
         },
         {
-          "exerciseId": "sentadilla_bulgara",
+          "exerciseId": "curl_femoral",
+          "order": 2,
+          "sets": 3,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 1,
+          "restSec": 90,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "extension_cuadriceps",
+          "order": 3,
+          "sets": 3,
+          "repMin": 12,
+          "repMax": 15,
+          "rir": 1,
+          "restSec": 75,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "elevacion_talones",
+          "order": 4,
+          "sets": 4,
+          "repMin": 12,
+          "repMax": 15,
+          "rir": 0,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "crunch_polea",
+          "order": 5,
+          "sets": 3,
+          "repMin": 15,
+          "repMax": 20,
+          "rir": 0,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "d4",
+      "label": "Día 4",
+      "name": "Push B",
+      "plan": [
+        {
+          "exerciseId": "press_plano",
+          "order": 1,
+          "sets": 3,
+          "repMin": 6,
+          "repMax": 8,
+          "rir": 1,
+          "restSec": 120,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "fondos_paralelas",
           "order": 2,
           "sets": 2,
           "repMin": 8,
@@ -437,22 +267,22 @@ export const CATALOG = {
           "restSec": 90,
           "kind": "peso",
           "durationUnit": null,
-          "notes": "por pierna"
+          "notes": ""
         },
         {
-          "exerciseId": "vacuum",
+          "exerciseId": "elevacion_lateral_mancuernas",
           "order": 3,
           "sets": 4,
-          "repMin": 30,
-          "repMax": 30,
-          "rir": null,
-          "restSec": 45,
-          "kind": "tiempo",
-          "durationUnit": "s",
-          "notes": "segundos"
+          "repMin": 12,
+          "repMax": 15,
+          "rir": 0,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
         },
         {
-          "exerciseId": "crunch_cable",
+          "exerciseId": "pajaros_mancuernas",
           "order": 4,
           "sets": 3,
           "repMin": 15,
@@ -464,11 +294,169 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "pantorrilla_sentado",
+          "exerciseId": "curl_inclinado_mancuernas",
           "order": 5,
+          "sets": 3,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 1,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "extension_triceps_cuerda",
+          "order": 6,
+          "sets": 3,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 1,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "d5",
+      "label": "Día 5",
+      "name": "Pull B",
+      "plan": [
+        {
+          "exerciseId": "remo_pesado",
+          "order": 1,
+          "sets": 3,
+          "repMin": 6,
+          "repMax": 8,
+          "rir": 1,
+          "restSec": 120,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "jalon_unilateral",
+          "order": 2,
+          "sets": 3,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 1,
+          "restSec": 90,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "remo_gironda",
+          "order": 3,
+          "sets": 2,
+          "repMin": 12,
+          "repMax": 15,
+          "rir": 1,
+          "restSec": 75,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "y_raises",
+          "order": 4,
           "sets": 3,
           "repMin": 15,
           "repMax": 20,
+          "rir": 0,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "curl_predicador",
+          "order": 5,
+          "sets": 2,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 1,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "extension_unilateral_polea",
+          "order": 6,
+          "sets": 2,
+          "repMin": 12,
+          "repMax": 15,
+          "rir": 0,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "d6",
+      "label": "Día 6",
+      "name": "Legs B",
+      "plan": [
+        {
+          "exerciseId": "peso_muerto_rumano",
+          "order": 1,
+          "sets": 3,
+          "repMin": 8,
+          "repMax": 10,
+          "rir": 2,
+          "restSec": 120,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "sentadilla_bulgara",
+          "order": 2,
+          "sets": 3,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 1,
+          "restSec": 90,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "curl_femoral",
+          "order": 3,
+          "sets": 3,
+          "repMin": 12,
+          "repMax": 15,
+          "rir": 0,
+          "restSec": 75,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "elevacion_talones",
+          "order": 4,
+          "sets": 4,
+          "repMin": 10,
+          "repMax": 12,
+          "rir": 0,
+          "restSec": 60,
+          "kind": "peso",
+          "durationUnit": null,
+          "notes": ""
+        },
+        {
+          "exerciseId": "superserie_brazos",
+          "order": 5,
+          "sets": 3,
+          "repMin": 12,
+          "repMax": 15,
           "rir": 0,
           "restSec": 60,
           "kind": "peso",
@@ -480,369 +468,368 @@ export const CATALOG = {
   ],
   "exercises": [
     {
-      "id": "press_incl_db",
+      "id": "press_inclinado_mancuernas",
       "name": "Press Inclinado (Mancuernas)",
       "muscle": "pecho",
-      "equipment": "mancuernas",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2,
-      "stepLb": 2.5,
+      "stepKg": 2.0,
+      "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "aperturas_incl_polea",
+      "id": "aperturas_inclinadas_polea",
       "name": "Aperturas Inclinadas (Polea)",
       "muscle": "pecho",
-      "equipment": "polea",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
+      "stepKg": 2.0,
+      "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
       "id": "press_militar",
-      "name": "Press Militar (Máq/Smith)",
+      "name": "Press Militar",
       "muscle": "hombro",
-      "equipment": "maquina",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "elev_lateral_cable",
-      "name": "Elevación Lateral (Cable)",
+      "id": "elevacion_lateral_polea",
+      "name": "Elevaciones Laterales (Polea)",
       "muscle": "hombro",
-      "equipment": "cable",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
+      "stepKg": 2.0,
+      "stepLb": 5,
       "durationUnit": null,
-      "notes": "drop set en la última serie"
+      "notes": ""
     },
     {
       "id": "curl_biceps_polea",
-      "name": "Curl Bíceps (Polea)",
-      "muscle": "biceps",
-      "equipment": "polea",
+      "name": "Curl de Bíceps (Polea)",
+      "muscle": "brazo",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "ext_triceps_overhead",
-      "name": "Ext Tríceps Overhead (Cable)",
-      "muscle": "triceps",
-      "equipment": "cable",
+      "id": "extension_triceps_overhead",
+      "name": "Extensión de Tríceps Overhead",
+      "muscle": "brazo",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "cardio_zona2",
-      "name": "Cardio Zona 2 (caminar inclin.)",
-      "muscle": "cardio",
-      "equipment": "caminadora",
-      "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
-      "durationUnit": "min",
+      "durationUnit": null,
       "notes": ""
     },
     {
       "id": "jalon_pecho",
-      "name": "Jalón al Pecho (agarre medio)",
+      "name": "Jalón al Pecho",
       "muscle": "espalda",
-      "equipment": "polea",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
       "id": "remo_pecho_apoyado",
-      "name": "Remo con Pecho Apoyado",
+      "name": "Remo con Apoyo en Pecho",
       "muscle": "espalda",
-      "equipment": "maquina",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
       "id": "pullover_polea",
-      "name": "Pullover Polea Alta",
+      "name": "Pull-over en Polea Alta",
       "muscle": "espalda",
-      "equipment": "polea",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "ext_cuadriceps",
-      "name": "Extensión Cuádriceps",
-      "muscle": "cuadriceps",
-      "equipment": "maquina",
-      "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "curl_femoral_sentado",
-      "name": "Curl Femoral Sentado",
-      "muscle": "femoral",
-      "equipment": "maquina",
-      "unit": "kg",
-      "stepKg": 2.5,
-      "stepLb": 5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "pantorrilla_pie",
-      "name": "Pantorrilla de Pie",
-      "muscle": "gemelo",
-      "equipment": "maquina",
-      "unit": "kg",
-      "stepKg": 2.5,
-      "stepLb": 5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "press_mancuernas_sentado",
-      "name": "Press Mancuernas Sentado",
+      "id": "face_pulls",
+      "name": "Face Pulls / Pájaros en Polea",
       "muscle": "hombro",
-      "equipment": "mancuernas",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2,
-      "stepLb": 2.5,
+      "stepKg": 2.0,
+      "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "elev_lateral_mancuernas",
-      "name": "Elevación Lateral (Mancuernas)",
-      "muscle": "hombro",
-      "equipment": "mancuernas",
+      "id": "curl_martillo",
+      "name": "Curl Martillo",
+      "muscle": "brazo",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1,
-      "stepLb": 2.5,
+      "stepKg": 2.0,
+      "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "face_pull",
-      "name": "Face Pulls (Post.)",
-      "muscle": "hombro_posterior",
-      "equipment": "cable",
+      "id": "press_frances",
+      "name": "Press Francés / Extensión en Polea",
+      "muscle": "brazo",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "prensa_inclinada",
+      "name": "Prensa Inclinada / Hack",
+      "muscle": "pierna",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "curl_femoral",
+      "name": "Curl Femoral",
+      "muscle": "pierna",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "extension_cuadriceps",
+      "name": "Extensión de Cuádriceps",
+      "muscle": "pierna",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "elevacion_talones",
+      "name": "Elevación de Talones",
+      "muscle": "pierna",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "crunch_polea",
+      "name": "Elevaciones Piernas / Crunch",
+      "muscle": "core",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
       "id": "press_plano",
-      "name": "Press Plano (Máq/Smith)",
+      "name": "Press Plano",
       "muscle": "pecho",
-      "equipment": "maquina",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "crunch_cable",
-      "name": "Crunch en Cable",
-      "muscle": "core",
-      "equipment": "cable",
+      "id": "fondos_paralelas",
+      "name": "Fondos en Paralelas",
+      "muscle": "pecho",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "elev_piernas_colgado",
-      "name": "Elevación Piernas Colgado",
-      "muscle": "core",
-      "equipment": "barra",
+      "id": "elevacion_lateral_mancuernas",
+      "name": "Elevaciones Laterales (Mancuernas)",
+      "muscle": "hombro",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
-      "notes": "peso corporal"
+      "notes": ""
     },
     {
-      "id": "jalon_ancho",
-      "name": "Jalón Ancho (Dorsal)",
+      "id": "pajaros_mancuernas",
+      "name": "Pájaros con Mancuernas",
+      "muscle": "hombro",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "curl_inclinado_mancuernas",
+      "name": "Curl Inclinado (Mancuernas)",
+      "muscle": "brazo",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "extension_triceps_cuerda",
+      "name": "Extensión Cuerda / Bancos",
+      "muscle": "brazo",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "remo_pesado",
+      "name": "Remo Pesado (Barra/Mancuerna)",
       "muscle": "espalda",
-      "equipment": "polea",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "remo_maquina",
-      "name": "Remo en Máquina",
+      "id": "jalon_unilateral",
+      "name": "Jalón Unilateral en Polea",
       "muscle": "espalda",
-      "equipment": "maquina",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "remo_gironda",
+      "name": "Remo Gironda",
+      "muscle": "espalda",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
+      "stepLb": 5,
+      "durationUnit": null,
+      "notes": ""
+    },
+    {
+      "id": "y_raises",
+      "name": "Elevaciones Laterales Inclinadas (Y)",
+      "muscle": "hombro",
+      "equipment": "gym",
+      "unit": "kg",
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
       "id": "curl_predicador",
-      "name": "Curl Predicador",
-      "muscle": "biceps",
-      "equipment": "maquina",
+      "name": "Curl Predicador / Scott",
+      "muscle": "brazo",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "rompecraneos",
-      "name": "Rompecráneos",
-      "muscle": "triceps",
-      "equipment": "mancuernas",
-      "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "hip_thrust",
-      "name": "Hip Thrust",
-      "muscle": "gluteo",
-      "equipment": "barra",
-      "unit": "kg",
-      "stepKg": 2.5,
-      "stepLb": 5,
-      "durationUnit": null,
-      "notes": "riesgo lumbar — advisory del plan §9.2"
-    },
-    {
-      "id": "press_incl_barra",
-      "name": "Press Inclinado (Barra/Smith)",
-      "muscle": "pecho",
-      "equipment": "barra",
-      "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
-      "id": "aperturas_altas_polea",
-      "name": "Aperturas Altas Polea",
-      "muscle": "pecho",
-      "equipment": "polea",
+      "id": "extension_unilateral_polea",
+      "name": "Extensión Unilateral en Polea",
+      "muscle": "brazo",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "elev_lateral_maq",
-      "name": "Elevación Lateral (Máq/Cable)",
-      "muscle": "hombro",
-      "equipment": "maquina",
-      "unit": "kg",
-      "stepKg": 1.25,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "curl_martillo",
-      "name": "Curl Martillo (Mancuernas)",
-      "muscle": "biceps",
-      "equipment": "mancuernas",
-      "unit": "kg",
-      "stepKg": 1,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": ""
-    },
-    {
-      "id": "fondos_ext_triceps",
-      "name": "Fondos + Ext Tríceps",
-      "muscle": "triceps",
-      "equipment": "paralelas",
-      "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
-      "notes": "objetivo original: fallo técnico"
+      "notes": ""
     },
     {
-      "id": "prensa_inclinada",
-      "name": "Prensa Inclinada",
-      "muscle": "cuadriceps",
-      "equipment": "maquina",
+      "id": "peso_muerto_rumano",
+      "name": "Peso Muerto Rumano",
+      "muscle": "pierna",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     },
     {
       "id": "sentadilla_bulgara",
-      "name": "Sentadilla Búlgara",
-      "muscle": "cuadriceps",
-      "equipment": "mancuernas",
+      "name": "Prensa Alta / Búlgaras",
+      "muscle": "pierna",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2,
-      "stepLb": 2.5,
-      "durationUnit": null,
-      "notes": "riesgo lumbar/rodilla — advisory del plan §9.2; alternativa sugerida: prensa unilateral"
-    },
-    {
-      "id": "vacuum",
-      "name": "Vacuum Abdominal",
-      "muscle": "core",
-      "equipment": "ninguno",
-      "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
-      "durationUnit": "s",
-      "notes": "en ayunas"
+      "durationUnit": null,
+      "notes": ""
     },
     {
-      "id": "pantorrilla_sentado",
-      "name": "Pantorrilla Sentado",
-      "muscle": "gemelo",
-      "equipment": "maquina",
+      "id": "superserie_brazos",
+      "name": "Superserie Brazos",
+      "muscle": "brazo",
+      "equipment": "gym",
       "unit": "kg",
-      "stepKg": 2.5,
+      "stepKg": 2.0,
       "stepLb": 5,
       "durationUnit": null,
       "notes": ""
     }
-  ]
+  ],
+  "performance": {
+    "indicator_exercise_ids": [
+      "press_inclinado_mancuernas",
+      "jalon_pecho",
+      "press_militar",
+      "remo_pecho_apoyado",
+      "prensa_inclinada",
+      "peso_muerto_rumano"
+    ]
+  }
 };
 
 export const EXERCISE_BY_ID = Object.fromEntries(CATALOG.exercises.map((e) => [e.id, e]));
