@@ -11,6 +11,10 @@ import { CATALOG, DAY_BY_ID, EXERCISE_BY_ID } from './catalog.js';
 export const APP_VERSION = '1.0.0';
 export const EXPORT_SCHEMA = 1;
 
+export function canonicalMeasurementType(type) {
+  return ({ peso: 'weight', cintura: 'waist' })[type] || type || 'weight';
+}
+
 export function createStore() {
   const listeners = new Set();
   const state = {
@@ -46,7 +50,14 @@ export function createStore() {
       ]);
       state.sets = sets;
       state.sessions = sessions;
-      state.measurements = measurements;
+      state.measurements = measurements.map((row) => ({
+        ...row,
+        type: canonicalMeasurementType(row.type),
+      }));
+      const migratedMeasurements = state.measurements.filter((row, index) => (
+        row.type !== measurements[index].type
+      ));
+      await db.putMany(conn, db.STORES.measurements, migratedMeasurements);
       state.lastExportAt = lastExportAt;
       // Solo se considera activa si la sesión existe y sigue abierta.
       const active = sessions.find((s) => s.id === activeSessionId);
@@ -170,11 +181,12 @@ export function createStore() {
     // --- medidas corporales ---
 
     async saveMeasurement({ type, value, unit, date, note }) {
+      const canonicalType = canonicalMeasurementType(type);
       const row = {
         id: newId(),
-        type: type || 'peso',
+        type: canonicalType,
         value: Number(String(value).replace(',', '.')) || 0,
-        unit: unit || (type === 'cintura' ? 'cm' : 'kg'),
+        unit: unit || (canonicalType === 'waist' ? 'cm' : 'kg'),
         date: date || localDate(),
         note: String(note || '').slice(0, 300),
         createdAt: new Date().toISOString(),
@@ -200,8 +212,9 @@ export function createStore() {
     },
 
     measurementsOfType(type) {
+      const canonicalType = canonicalMeasurementType(type);
       return state.measurements
-        .filter((m) => m.type === type)
+        .filter((m) => canonicalMeasurementType(m.type) === canonicalType)
         .sort((a, b) => String(a.date).localeCompare(String(b.date)));
     },
 
@@ -273,7 +286,12 @@ export function createStore() {
       report.sessions = await mergeInto(state.sessions, payload.sessions, db.STORES.sessions);
       report.sets = await mergeInto(state.sets, payload.sets, db.STORES.sets,
         (r) => normalizeSet({ ...r, createdAt: r.createdAt }));
-      report.measurements = await mergeInto(state.measurements, payload.measurements, db.STORES.measurements);
+      report.measurements = await mergeInto(
+        state.measurements,
+        payload.measurements,
+        db.STORES.measurements,
+        (row) => ({ ...row, type: canonicalMeasurementType(row.type) }),
+      );
 
       emit();
       return report;

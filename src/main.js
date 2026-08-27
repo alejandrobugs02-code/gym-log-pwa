@@ -380,8 +380,8 @@ function renderSessionDetail(id) {
 // --- pestaña CUERPO ---------------------------------------------------------
 
 function renderCuerpo() {
-  const peso = store.measurementsOfType('peso');
-  const cintura = store.measurementsOfType('cintura');
+  const peso = store.measurementsOfType('weight');
+  const cintura = store.measurementsOfType('waist');
   const today = M.localDate();
   const pesoHoy = peso.find((m) => m.date === today);
   const cinturaHoy = cintura.find((m) => m.date === today);
@@ -706,8 +706,8 @@ document.addEventListener('click', async (ev) => {
       const peso = document.getElementById('m-peso').value.trim();
       const cintura = document.getElementById('m-cintura').value.trim();
       let n = 0;
-      if (peso !== '') { await store.saveMeasurement({ type: 'peso', value: peso, unit: 'kg' }); n += 1; }
-      if (cintura !== '') { await store.saveMeasurement({ type: 'cintura', value: cintura, unit: 'cm' }); n += 1; }
+      if (peso !== '') { await store.saveMeasurement({ type: 'weight', value: peso, unit: 'kg' }); n += 1; }
+      if (cintura !== '') { await store.saveMeasurement({ type: 'waist', value: cintura, unit: 'cm' }); n += 1; }
       toast(n ? 'Medidas guardadas' : 'Nada que guardar');
       render();
       break;
