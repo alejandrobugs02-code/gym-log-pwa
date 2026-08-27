@@ -474,7 +474,7 @@ function renderAjustes() {
 
     <h2>Rutina</h2>
     <div class="card">
-      <p class="small muted">La rutina <b>${esc(CATALOG.releaseId)}</b> se compila desde <code>Brain/65_Gym/rutina-6d-flex.md</code>. Para cambiarla: edita ese archivo y vuelve a correr <code>npm run catalog</code>. Las sesiones ya registradas guardan su propia copia del plan, así que cambiar la rutina no altera el historial.</p>
+      <p class="small muted">La rutina <b>${esc(CATALOG.releaseId)}</b> se compila desde la única nota <code>estado: activa</code> en <code>Brain/65_Gym/rutinas/</code>. Para cambiarla: cierra el bloque, actualiza la biblioteca y vuelve a correr <code>npm run catalog</code>. Las sesiones ya registradas guardan su propia copia del plan, así que cambiar la rutina no altera el historial.</p>
       ${CATALOG.days.map((d) => `<div class="row small" style="padding:5px 0"><span>${esc(d.label)} · ${esc(d.name)}</span><span class="right muted">${d.plan.length} ej.</span></div>`).join('')}
     </div>
 

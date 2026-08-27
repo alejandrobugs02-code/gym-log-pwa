@@ -1,5 +1,5 @@
 // GENERADO por compile-routine.py — no editar a mano.
-// Fuente: bloque YAML de rutina-6d-flex.md.
+// Fuente: bloque YAML de hipertrofia-6d-flex.md.
 // Para cambiar la rutina: edita el YAML en Brain y vuelve a compilar.
 
 export const CATALOG = {
@@ -21,7 +21,7 @@ export const CATALOG = {
       "name": "Push A",
       "plan": [
         {
-          "exerciseId": "press_inclinado_mancuernas",
+          "exerciseId": "press-inclinado-mancuernas",
           "order": 1,
           "sets": 3,
           "repMin": 6,
@@ -33,7 +33,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "aperturas_inclinadas_polea",
+          "exerciseId": "aperturas-inclinadas-polea",
           "order": 2,
           "sets": 2,
           "repMin": 12,
@@ -45,7 +45,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "press_militar",
+          "exerciseId": "press-militar",
           "order": 3,
           "sets": 2,
           "repMin": 8,
@@ -57,7 +57,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "elevacion_lateral_polea",
+          "exerciseId": "elevacion-lateral-polea",
           "order": 4,
           "sets": 3,
           "repMin": 15,
@@ -69,7 +69,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "curl_biceps_polea",
+          "exerciseId": "curl-biceps-polea",
           "order": 5,
           "sets": 2,
           "repMin": 10,
@@ -81,7 +81,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "extension_triceps_overhead",
+          "exerciseId": "extension-triceps-overhead",
           "order": 6,
           "sets": 2,
           "repMin": 10,
@@ -100,7 +100,7 @@ export const CATALOG = {
       "name": "Pull A",
       "plan": [
         {
-          "exerciseId": "jalon_pecho",
+          "exerciseId": "jalon-pecho",
           "order": 1,
           "sets": 3,
           "repMin": 8,
@@ -112,7 +112,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "remo_pecho_apoyado",
+          "exerciseId": "remo-pecho-apoyado",
           "order": 2,
           "sets": 3,
           "repMin": 10,
@@ -124,7 +124,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "pullover_polea",
+          "exerciseId": "pullover-polea",
           "order": 3,
           "sets": 2,
           "repMin": 12,
@@ -136,7 +136,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "face_pulls",
+          "exerciseId": "face-pulls",
           "order": 4,
           "sets": 3,
           "repMin": 15,
@@ -148,7 +148,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "curl_martillo",
+          "exerciseId": "curl-martillo",
           "order": 5,
           "sets": 2,
           "repMin": 10,
@@ -160,7 +160,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "press_frances",
+          "exerciseId": "press-frances",
           "order": 6,
           "sets": 2,
           "repMin": 10,
@@ -179,7 +179,7 @@ export const CATALOG = {
       "name": "Legs A",
       "plan": [
         {
-          "exerciseId": "prensa_inclinada",
+          "exerciseId": "prensa-inclinada",
           "order": 1,
           "sets": 3,
           "repMin": 8,
@@ -191,7 +191,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "curl_femoral",
+          "exerciseId": "curl-femoral",
           "order": 2,
           "sets": 3,
           "repMin": 10,
@@ -203,7 +203,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "extension_cuadriceps",
+          "exerciseId": "extension-cuadriceps",
           "order": 3,
           "sets": 3,
           "repMin": 12,
@@ -215,7 +215,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "elevacion_talones",
+          "exerciseId": "elevacion-talones",
           "order": 4,
           "sets": 4,
           "repMin": 12,
@@ -227,7 +227,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "crunch_polea",
+          "exerciseId": "crunch-polea",
           "order": 5,
           "sets": 3,
           "repMin": 15,
@@ -246,7 +246,7 @@ export const CATALOG = {
       "name": "Push B",
       "plan": [
         {
-          "exerciseId": "press_plano",
+          "exerciseId": "press-plano",
           "order": 1,
           "sets": 3,
           "repMin": 6,
@@ -258,7 +258,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "fondos_paralelas",
+          "exerciseId": "fondos-paralelas",
           "order": 2,
           "sets": 2,
           "repMin": 8,
@@ -270,7 +270,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "elevacion_lateral_mancuernas",
+          "exerciseId": "elevacion-lateral-mancuernas",
           "order": 3,
           "sets": 4,
           "repMin": 12,
@@ -282,7 +282,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "pajaros_mancuernas",
+          "exerciseId": "pajaros-mancuernas",
           "order": 4,
           "sets": 3,
           "repMin": 15,
@@ -294,7 +294,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "curl_inclinado_mancuernas",
+          "exerciseId": "curl-inclinado-mancuernas",
           "order": 5,
           "sets": 3,
           "repMin": 10,
@@ -306,7 +306,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "extension_triceps_cuerda",
+          "exerciseId": "extension-triceps-cuerda",
           "order": 6,
           "sets": 3,
           "repMin": 10,
@@ -325,7 +325,7 @@ export const CATALOG = {
       "name": "Pull B",
       "plan": [
         {
-          "exerciseId": "remo_pesado",
+          "exerciseId": "remo-pesado",
           "order": 1,
           "sets": 3,
           "repMin": 6,
@@ -337,7 +337,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "jalon_unilateral",
+          "exerciseId": "jalon-unilateral",
           "order": 2,
           "sets": 3,
           "repMin": 10,
@@ -349,7 +349,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "remo_gironda",
+          "exerciseId": "remo-gironda",
           "order": 3,
           "sets": 2,
           "repMin": 12,
@@ -361,7 +361,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "y_raises",
+          "exerciseId": "y-raises",
           "order": 4,
           "sets": 3,
           "repMin": 15,
@@ -373,7 +373,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "curl_predicador",
+          "exerciseId": "curl-predicador",
           "order": 5,
           "sets": 2,
           "repMin": 10,
@@ -385,7 +385,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "extension_unilateral_polea",
+          "exerciseId": "extension-unilateral-polea",
           "order": 6,
           "sets": 2,
           "repMin": 12,
@@ -404,7 +404,7 @@ export const CATALOG = {
       "name": "Legs B",
       "plan": [
         {
-          "exerciseId": "peso_muerto_rumano",
+          "exerciseId": "peso-muerto-rumano",
           "order": 1,
           "sets": 3,
           "repMin": 8,
@@ -416,7 +416,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "sentadilla_bulgara",
+          "exerciseId": "sentadilla-bulgara",
           "order": 2,
           "sets": 3,
           "repMin": 10,
@@ -428,7 +428,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "curl_femoral",
+          "exerciseId": "curl-femoral",
           "order": 3,
           "sets": 3,
           "repMin": 12,
@@ -440,7 +440,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "elevacion_talones",
+          "exerciseId": "elevacion-talones",
           "order": 4,
           "sets": 4,
           "repMin": 10,
@@ -452,7 +452,7 @@ export const CATALOG = {
           "notes": ""
         },
         {
-          "exerciseId": "superserie_brazos",
+          "exerciseId": "superserie-brazos",
           "order": 5,
           "sets": 3,
           "repMin": 12,
@@ -468,7 +468,11 @@ export const CATALOG = {
   ],
   "exercises": [
     {
-      "id": "press_inclinado_mancuernas",
+      "id": "press-inclinado-mancuernas",
+      "slug": "press-inclinado-mancuernas",
+      "aliases": [
+        "press_inclinado_mancuernas"
+      ],
       "name": "Press Inclinado (Mancuernas)",
       "muscle": "pecho",
       "equipment": "gym",
@@ -479,7 +483,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "aperturas_inclinadas_polea",
+      "id": "aperturas-inclinadas-polea",
+      "slug": "aperturas-inclinadas-polea",
+      "aliases": [
+        "aperturas_inclinadas_polea"
+      ],
       "name": "Aperturas Inclinadas (Polea)",
       "muscle": "pecho",
       "equipment": "gym",
@@ -490,7 +498,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "press_militar",
+      "id": "press-militar",
+      "slug": "press-militar",
+      "aliases": [
+        "press_militar"
+      ],
       "name": "Press Militar",
       "muscle": "hombro",
       "equipment": "gym",
@@ -501,7 +513,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "elevacion_lateral_polea",
+      "id": "elevacion-lateral-polea",
+      "slug": "elevacion-lateral-polea",
+      "aliases": [
+        "elevacion_lateral_polea"
+      ],
       "name": "Elevaciones Laterales (Polea)",
       "muscle": "hombro",
       "equipment": "gym",
@@ -512,7 +528,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "curl_biceps_polea",
+      "id": "curl-biceps-polea",
+      "slug": "curl-biceps-polea",
+      "aliases": [
+        "curl_biceps_polea"
+      ],
       "name": "Curl de Bíceps (Polea)",
       "muscle": "brazo",
       "equipment": "gym",
@@ -523,7 +543,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "extension_triceps_overhead",
+      "id": "extension-triceps-overhead",
+      "slug": "extension-triceps-overhead",
+      "aliases": [
+        "extension_triceps_overhead"
+      ],
       "name": "Extensión de Tríceps Overhead",
       "muscle": "brazo",
       "equipment": "gym",
@@ -534,7 +558,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "jalon_pecho",
+      "id": "jalon-pecho",
+      "slug": "jalon-pecho",
+      "aliases": [
+        "jalon_pecho"
+      ],
       "name": "Jalón al Pecho",
       "muscle": "espalda",
       "equipment": "gym",
@@ -545,7 +573,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "remo_pecho_apoyado",
+      "id": "remo-pecho-apoyado",
+      "slug": "remo-pecho-apoyado",
+      "aliases": [
+        "remo_pecho_apoyado"
+      ],
       "name": "Remo con Apoyo en Pecho",
       "muscle": "espalda",
       "equipment": "gym",
@@ -556,7 +588,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "pullover_polea",
+      "id": "pullover-polea",
+      "slug": "pullover-polea",
+      "aliases": [
+        "pullover_polea"
+      ],
       "name": "Pull-over en Polea Alta",
       "muscle": "espalda",
       "equipment": "gym",
@@ -567,7 +603,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "face_pulls",
+      "id": "face-pulls",
+      "slug": "face-pulls",
+      "aliases": [
+        "face_pulls"
+      ],
       "name": "Face Pulls / Pájaros en Polea",
       "muscle": "hombro",
       "equipment": "gym",
@@ -578,7 +618,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "curl_martillo",
+      "id": "curl-martillo",
+      "slug": "curl-martillo",
+      "aliases": [
+        "curl_martillo"
+      ],
       "name": "Curl Martillo",
       "muscle": "brazo",
       "equipment": "gym",
@@ -589,7 +633,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "press_frances",
+      "id": "press-frances",
+      "slug": "press-frances",
+      "aliases": [
+        "press_frances"
+      ],
       "name": "Press Francés / Extensión en Polea",
       "muscle": "brazo",
       "equipment": "gym",
@@ -600,7 +648,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "prensa_inclinada",
+      "id": "prensa-inclinada",
+      "slug": "prensa-inclinada",
+      "aliases": [
+        "prensa_inclinada"
+      ],
       "name": "Prensa Inclinada / Hack",
       "muscle": "pierna",
       "equipment": "gym",
@@ -611,7 +663,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "curl_femoral",
+      "id": "curl-femoral",
+      "slug": "curl-femoral",
+      "aliases": [
+        "curl_femoral"
+      ],
       "name": "Curl Femoral",
       "muscle": "pierna",
       "equipment": "gym",
@@ -622,7 +678,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "extension_cuadriceps",
+      "id": "extension-cuadriceps",
+      "slug": "extension-cuadriceps",
+      "aliases": [
+        "extension_cuadriceps"
+      ],
       "name": "Extensión de Cuádriceps",
       "muscle": "pierna",
       "equipment": "gym",
@@ -633,7 +693,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "elevacion_talones",
+      "id": "elevacion-talones",
+      "slug": "elevacion-talones",
+      "aliases": [
+        "elevacion_talones"
+      ],
       "name": "Elevación de Talones",
       "muscle": "pierna",
       "equipment": "gym",
@@ -644,7 +708,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "crunch_polea",
+      "id": "crunch-polea",
+      "slug": "crunch-polea",
+      "aliases": [
+        "crunch_polea"
+      ],
       "name": "Elevaciones Piernas / Crunch",
       "muscle": "core",
       "equipment": "gym",
@@ -655,7 +723,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "press_plano",
+      "id": "press-plano",
+      "slug": "press-plano",
+      "aliases": [
+        "press_plano"
+      ],
       "name": "Press Plano",
       "muscle": "pecho",
       "equipment": "gym",
@@ -666,7 +738,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "fondos_paralelas",
+      "id": "fondos-paralelas",
+      "slug": "fondos-paralelas",
+      "aliases": [
+        "fondos_paralelas"
+      ],
       "name": "Fondos en Paralelas",
       "muscle": "pecho",
       "equipment": "gym",
@@ -677,7 +753,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "elevacion_lateral_mancuernas",
+      "id": "elevacion-lateral-mancuernas",
+      "slug": "elevacion-lateral-mancuernas",
+      "aliases": [
+        "elevacion_lateral_mancuernas"
+      ],
       "name": "Elevaciones Laterales (Mancuernas)",
       "muscle": "hombro",
       "equipment": "gym",
@@ -688,7 +768,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "pajaros_mancuernas",
+      "id": "pajaros-mancuernas",
+      "slug": "pajaros-mancuernas",
+      "aliases": [
+        "pajaros_mancuernas"
+      ],
       "name": "Pájaros con Mancuernas",
       "muscle": "hombro",
       "equipment": "gym",
@@ -699,7 +783,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "curl_inclinado_mancuernas",
+      "id": "curl-inclinado-mancuernas",
+      "slug": "curl-inclinado-mancuernas",
+      "aliases": [
+        "curl_inclinado_mancuernas"
+      ],
       "name": "Curl Inclinado (Mancuernas)",
       "muscle": "brazo",
       "equipment": "gym",
@@ -710,7 +798,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "extension_triceps_cuerda",
+      "id": "extension-triceps-cuerda",
+      "slug": "extension-triceps-cuerda",
+      "aliases": [
+        "extension_triceps_cuerda"
+      ],
       "name": "Extensión Cuerda / Bancos",
       "muscle": "brazo",
       "equipment": "gym",
@@ -721,7 +813,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "remo_pesado",
+      "id": "remo-pesado",
+      "slug": "remo-pesado",
+      "aliases": [
+        "remo_pesado"
+      ],
       "name": "Remo Pesado (Barra/Mancuerna)",
       "muscle": "espalda",
       "equipment": "gym",
@@ -732,7 +828,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "jalon_unilateral",
+      "id": "jalon-unilateral",
+      "slug": "jalon-unilateral",
+      "aliases": [
+        "jalon_unilateral"
+      ],
       "name": "Jalón Unilateral en Polea",
       "muscle": "espalda",
       "equipment": "gym",
@@ -743,7 +843,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "remo_gironda",
+      "id": "remo-gironda",
+      "slug": "remo-gironda",
+      "aliases": [
+        "remo_gironda"
+      ],
       "name": "Remo Gironda",
       "muscle": "espalda",
       "equipment": "gym",
@@ -754,7 +858,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "y_raises",
+      "id": "y-raises",
+      "slug": "y-raises",
+      "aliases": [
+        "y_raises"
+      ],
       "name": "Elevaciones Laterales Inclinadas (Y)",
       "muscle": "hombro",
       "equipment": "gym",
@@ -765,7 +873,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "curl_predicador",
+      "id": "curl-predicador",
+      "slug": "curl-predicador",
+      "aliases": [
+        "curl_predicador"
+      ],
       "name": "Curl Predicador / Scott",
       "muscle": "brazo",
       "equipment": "gym",
@@ -776,7 +888,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "extension_unilateral_polea",
+      "id": "extension-unilateral-polea",
+      "slug": "extension-unilateral-polea",
+      "aliases": [
+        "extension_unilateral_polea"
+      ],
       "name": "Extensión Unilateral en Polea",
       "muscle": "brazo",
       "equipment": "gym",
@@ -787,7 +903,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "peso_muerto_rumano",
+      "id": "peso-muerto-rumano",
+      "slug": "peso-muerto-rumano",
+      "aliases": [
+        "peso_muerto_rumano"
+      ],
       "name": "Peso Muerto Rumano",
       "muscle": "pierna",
       "equipment": "gym",
@@ -798,7 +918,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "sentadilla_bulgara",
+      "id": "sentadilla-bulgara",
+      "slug": "sentadilla-bulgara",
+      "aliases": [
+        "sentadilla_bulgara"
+      ],
       "name": "Prensa Alta / Búlgaras",
       "muscle": "pierna",
       "equipment": "gym",
@@ -809,7 +933,11 @@ export const CATALOG = {
       "notes": ""
     },
     {
-      "id": "superserie_brazos",
+      "id": "superserie-brazos",
+      "slug": "superserie-brazos",
+      "aliases": [
+        "superserie_brazos"
+      ],
       "name": "Superserie Brazos",
       "muscle": "brazo",
       "equipment": "gym",
@@ -822,15 +950,15 @@ export const CATALOG = {
   ],
   "performance": {
     "indicator_exercise_ids": [
-      "press_inclinado_mancuernas",
-      "jalon_pecho",
-      "press_militar",
-      "remo_pecho_apoyado",
-      "prensa_inclinada",
-      "peso_muerto_rumano"
+      "press-inclinado-mancuernas",
+      "jalon-pecho",
+      "press-militar",
+      "remo-pecho-apoyado",
+      "prensa-inclinada",
+      "peso-muerto-rumano"
     ]
   }
 };
 
-export const EXERCISE_BY_ID = Object.fromEntries(CATALOG.exercises.map((e) => [e.id, e]));
+export const EXERCISE_BY_ID = Object.fromEntries(CATALOG.exercises.flatMap((e) => [[e.id, e], ...e.aliases.map((alias) => [alias, e])]));
 export const DAY_BY_ID = Object.fromEntries(CATALOG.days.map((d) => [d.id, d]));
