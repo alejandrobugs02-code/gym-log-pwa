@@ -1,8 +1,14 @@
 // Service worker: la app tiene que abrir en el gimnasio aunque no haya señal.
 // Estrategia: cache-first para el shell, con actualización en segundo plano.
 // Los datos NO pasan por aquí — viven en IndexedDB.
+//
+// `CACHE` lleva un token de versión. `publish.ps1` lo reescribe con un hash del
+// shell al copiar al mirror, así que cada despliegue estrena nombre de cache:
+// `activate` purga el anterior y el iPhone recibe el shell nuevo al primer
+// arranque en vez de servir el viejo desde disco. En desarrollo (`npm run
+// serve`) queda `gym-dev`, que es correcto porque solo hay una versión.
 
-const CACHE = 'gym-v1';
+const CACHE = 'gym-40add398ecf9';
 const SHELL = [
   './',
   './index.html',

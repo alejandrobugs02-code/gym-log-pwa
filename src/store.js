@@ -7,8 +7,11 @@ import {
   normalizeSet, newSession, closeSession, nextDayId, newId, localDate,
 } from './model.js';
 import { CATALOG, DAY_BY_ID, EXERCISE_BY_ID } from './catalog.js';
+import {
+  annulEvent, measurementEvent, sessionEvent, setEvent, toNdjson,
+} from './event-log.js';
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '2.0.0';
 export const EXPORT_SCHEMA = 1;
 
 export function canonicalMeasurementType(type) {
@@ -22,6 +25,7 @@ export function createStore() {
     sets: [],
     sessions: [],
     measurements: [],
+    eventOutbox: [],
     activeSessionId: null,
     catalog: CATALOG,
   };
@@ -41,12 +45,13 @@ export function createStore() {
 
     async init(indexedDBImpl) {
       conn = await db.openDb(indexedDBImpl);
-      const [sets, sessions, measurements, activeSessionId, lastExportAt] = await Promise.all([
+      const [sets, sessions, measurements, activeSessionId, lastExportAt, eventOutbox] = await Promise.all([
         db.getAll(conn, db.STORES.sets),
         db.getAll(conn, db.STORES.sessions),
         db.getAll(conn, db.STORES.measurements),
         db.getMeta(conn, 'activeSessionId', null),
         db.getMeta(conn, 'lastExportAt', null),
+        db.getMeta(conn, 'eventOutbox', []),
       ]);
       state.sets = sets;
       state.sessions = sessions;
@@ -59,12 +64,26 @@ export function createStore() {
       ));
       await db.putMany(conn, db.STORES.measurements, migratedMeasurements);
       state.lastExportAt = lastExportAt;
+      state.eventOutbox = Array.isArray(eventOutbox) ? eventOutbox : [];
       // Solo se considera activa si la sesión existe y sigue abierta.
       const active = sessions.find((s) => s.id === activeSessionId);
       state.activeSessionId = active && active.status === 'open' ? activeSessionId : null;
       state.ready = true;
       emit();
       return state;
+    },
+
+    async queueEvent(item) {
+      state.eventOutbox.push(item);
+      await db.setMeta(conn, 'eventOutbox', state.eventOutbox);
+      return item;
+    },
+
+    eventLogExport() {
+      return {
+        count: state.eventOutbox.length,
+        ndjson: toNdjson(state.eventOutbox),
+      };
     },
 
     // --- sesiones ---
@@ -95,6 +114,10 @@ export function createStore() {
       state.activeSessionId = session.id;
       await db.put(conn, db.STORES.sessions, session);
       await db.setMeta(conn, 'activeSessionId', session.id);
+      const logEvent = sessionEvent(session);
+      session.logRef = logEvent.id;
+      await db.put(conn, db.STORES.sessions, session);
+      await this.queueEvent(logEvent);
       emit();
       return session;
     },
@@ -103,10 +126,14 @@ export function createStore() {
     async reopenSession(sessionId) {
       const i = state.sessions.findIndex((s) => s.id === sessionId);
       if (i === -1) return null;
-      state.sessions[i] = { ...state.sessions[i], status: 'open', endedAt: null };
+      const previous = state.sessions[i];
+      state.sessions[i] = { ...previous, status: 'open', endedAt: null };
+      const logEvent = sessionEvent(state.sessions[i], { op: 'corregir', ref: previous.logRef || previous.id });
+      state.sessions[i].logRef = logEvent.id;
       state.activeSessionId = sessionId;
       await db.put(conn, db.STORES.sessions, state.sessions[i]);
       await db.setMeta(conn, 'activeSessionId', sessionId);
+      await this.queueEvent(logEvent);
       emit();
       return state.sessions[i];
     },
@@ -115,11 +142,14 @@ export function createStore() {
       const session = this.activeSession();
       if (!session) return null;
       const closed = closeSession(session, status);
+      const logEvent = sessionEvent(closed, { op: 'corregir', ref: session.logRef || session.id });
+      closed.logRef = logEvent.id;
       const i = state.sessions.findIndex((s) => s.id === session.id);
       state.sessions[i] = closed;
       state.activeSessionId = null;
       await db.put(conn, db.STORES.sessions, closed);
       await db.setMeta(conn, 'activeSessionId', null);
+      await this.queueEvent(logEvent);
       emit();
       return closed;
     },
@@ -128,10 +158,12 @@ export function createStore() {
     async discardSession(sessionId) {
       const setsOfSession = state.sets.filter((s) => s.sessionId === sessionId);
       if (setsOfSession.length) return false;
+      const session = state.sessions.find((s) => s.id === sessionId);
       state.sessions = state.sessions.filter((s) => s.id !== sessionId);
       if (state.activeSessionId === sessionId) state.activeSessionId = null;
       await db.del(conn, db.STORES.sessions, sessionId);
       await db.setMeta(conn, 'activeSessionId', state.activeSessionId);
+      if (session) await this.queueEvent(annulEvent({ tipo: 'sesion', fecha: session.date, ref: session.logRef || session.id }));
       emit();
       return true;
     },
@@ -160,21 +192,32 @@ export function createStore() {
     /** Guarda una serie. Nunca falla por validación: normaliza y persiste. */
     async saveSet(input) {
       const exercise = EXERCISE_BY_ID[input.exerciseId];
+      const previous = state.sets.find((s) => s.id === input.id);
       const set = normalizeSet({
         ...input,
         exerciseName: input.exerciseName || (exercise ? exercise.name : input.exerciseId),
       });
+      set.canonicalExerciseId = exercise ? exercise.id : set.exerciseId;
+      set.routineVersion = input.routineVersion || previous?.routineVersion
+        || this.activeSession()?.routineVersion || CATALOG.routineVersion;
+      const logEvent = setEvent(set, previous
+        ? { op: 'corregir', ref: previous.logRef || previous.id }
+        : {});
+      set.logRef = logEvent.id;
       const i = state.sets.findIndex((s) => s.id === set.id);
       if (i === -1) state.sets.push(set);
       else state.sets[i] = { ...state.sets[i], ...set };
       await db.put(conn, db.STORES.sets, set);
+      await this.queueEvent(logEvent);
       emit();
       return set;
     },
 
     async deleteSet(setId) {
+      const previous = state.sets.find((s) => s.id === setId);
       state.sets = state.sets.filter((s) => s.id !== setId);
       await db.del(conn, db.STORES.sets, setId);
+      if (previous) await this.queueEvent(annulEvent({ tipo: 'serie', fecha: previous.date, ref: previous.logRef || previous.id }));
       emit();
     },
 
@@ -200,14 +243,21 @@ export function createStore() {
       } else {
         state.measurements.push(row);
       }
+      const logEvent = measurementEvent(row, dupe
+        ? { op: 'corregir', ref: dupe.logRef || dupe.id }
+        : {});
+      row.logRef = logEvent.id;
       await db.put(conn, db.STORES.measurements, row);
+      await this.queueEvent(logEvent);
       emit();
       return row;
     },
 
     async deleteMeasurement(id) {
+      const previous = state.measurements.find((m) => m.id === id);
       state.measurements = state.measurements.filter((m) => m.id !== id);
       await db.del(conn, db.STORES.measurements, id);
+      if (previous) await this.queueEvent(annulEvent({ tipo: 'medida', fecha: previous.date, ref: previous.logRef || previous.id }));
       emit();
     },
 
@@ -257,6 +307,7 @@ export function createStore() {
         sessions: state.sessions,
         sets: state.sets,
         measurements: state.measurements,
+        eventOutbox: state.eventOutbox,
       };
     },
 
@@ -302,6 +353,7 @@ export function createStore() {
       state.sets = [];
       state.sessions = [];
       state.measurements = [];
+      state.eventOutbox = [];
       state.activeSessionId = null;
       emit();
     },
