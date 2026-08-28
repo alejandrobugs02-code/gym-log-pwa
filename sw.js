@@ -16,6 +16,7 @@ const SHELL = [
   './manifest.webmanifest',
   './src/main.js',
   './src/store.js',
+  './src/event-log.js',
   './src/db.js',
   './src/model.js',
   './src/format.js',
