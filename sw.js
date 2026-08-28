@@ -8,7 +8,7 @@
 // arranque en vez de servir el viejo desde disco. En desarrollo (`npm run
 // serve`) queda `gym-dev`, que es correcto porque solo hay una versión.
 
-const CACHE = 'gym-40add398ecf9';
+const CACHE = 'gym-42b4daff1e8f';
 const SHELL = [
   './',
   './index.html',

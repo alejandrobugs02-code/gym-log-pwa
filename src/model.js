@@ -4,9 +4,25 @@
 
 export const LB_TO_KG = 0.45359237;
 
-export function newId() {
+/**
+ * UUIDv4 RFC 4122. El contrato del log compartido exige este formato para
+ * session.id, set.id y measurement.id, así que el fallback (navegador sin
+ * `crypto.randomUUID`: contexto no seguro, WebView antiguo) también lo cumple.
+ * Implementación única: `event-log.js` la reutiliza en vez de duplicarla.
+ */
+export function uuid4() {
   if (globalThis.crypto && globalThis.crypto.randomUUID) return globalThis.crypto.randomUUID();
-  return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+  const bytes = new Uint8Array(16);
+  if (globalThis.crypto && globalThis.crypto.getRandomValues) globalThis.crypto.getRandomValues(bytes);
+  else for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = [...bytes].map((value) => value.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+export function newId() {
+  return uuid4();
 }
 
 export function round(n, decimals = 2) {
