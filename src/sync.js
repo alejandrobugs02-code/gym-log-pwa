@@ -33,7 +33,18 @@ class SyncManager {
     this.lastError = null;
     this.lastSyncAt = null;
     this.isSyncing = false;
+    this.reflushPending = false;
     this.listeners = new Set();
+  }
+
+  initFromStore(store) {
+    if (!store || !store.state) return;
+    const pendingCount = store.state.eventOutbox ? store.state.eventOutbox.length : 0;
+    if (pendingCount > 0) {
+      this.setStatus(SYNC_STATUS.PENDING);
+    } else {
+      this.setStatus(SYNC_STATUS.SYNCED);
+    }
   }
 
   subscribe(listener) {
@@ -96,6 +107,7 @@ class SyncManager {
     }
 
     if (this.isSyncing && !force) {
+      this.reflushPending = true;
       return { ok: false, reason: 'already-syncing' };
     }
 
@@ -151,6 +163,12 @@ class SyncManager {
       return { ok: false, error: msg, sent: totalSent, remaining: store.state.eventOutbox.length };
     } finally {
       this.isSyncing = false;
+      if (this.reflushPending) {
+        this.reflushPending = false;
+        setTimeout(() => {
+          this.flush(store).catch(() => {});
+        }, 50);
+      }
     }
   }
 
@@ -200,4 +218,8 @@ export function onSyncChange(listener) {
 
 export function testSyncConnection(endpoint, token) {
   return syncManager.testConnection(endpoint, token);
+}
+
+export function initSyncFromStore(store) {
+  return syncManager.initFromStore(store);
 }

@@ -12,7 +12,7 @@ import {
   prescriptionLine, sparkline, esc, summarizeSets,
 } from './format.js';
 import {
-  flushOutbox, getSyncState, onSyncChange, testSyncConnection, syncBadgeText, SYNC_STATUS,
+  flushOutbox, getSyncState, onSyncChange, testSyncConnection, syncBadgeText, SYNC_STATUS, initSyncFromStore,
 } from './sync.js';
 
 const store = createStore();
@@ -968,6 +968,7 @@ setInterval(() => {
 store.subscribe(() => {});
 store.init()
   .then(() => {
+    initSyncFromStore(store);
     render();
     updateSyncBadge();
     flushOutbox(store).catch(() => {});
