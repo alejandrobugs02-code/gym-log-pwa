@@ -21,6 +21,7 @@ const SHELL = [
   './src/model.js',
   './src/format.js',
   './src/catalog.js',
+  './src/sync.js',
   './src/rescue.js',
   './icons/icon-180.png',
   './icons/icon-192.png',
