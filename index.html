@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gym">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Gym</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png">
@@ -16,6 +16,15 @@
 <link rel="stylesheet" href="./app.css">
 </head>
 <body>
+
+<header id="topbar" class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">Gym</span>
+  </div>
+  <div class="topbar-right">
+    <button id="syncBadge" class="sync-badge" type="button" aria-label="Estado de sincronización" data-action="open-sync-modal" title="Sincronización">☁️✓</button>
+  </div>
+</header>
 
 <main id="view" class="view" aria-live="polite"></main>
 
@@ -31,6 +40,39 @@
   <button class="tab" data-tab="cuerpo" type="button"><span class="tab-ico">⚖️</span><span>Cuerpo</span></button>
   <button class="tab" data-tab="ajustes" type="button"><span class="tab-ico">⚙️</span><span>Ajustes</span></button>
 </nav>
+
+<div id="syncModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="syncModalTitle">
+  <div class="modal-backdrop" data-action="close-sync-modal"></div>
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 id="syncModalTitle" class="modal-title">Sincronización</h2>
+      <button class="btn-close" type="button" data-action="close-sync-modal" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sync-status-box">
+        <span id="syncModalBadge" class="sync-modal-badge">☁️✓</span>
+        <div>
+          <div id="syncModalStatusText" class="sync-status-text">Sincronizado</div>
+          <div id="syncModalDetail" class="sync-detail-text">0 eventos pendientes</div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label for="syncEndpointInput">Endpoint del Worker (URL)</label>
+        <input id="syncEndpointInput" type="url" placeholder="https://gym-sync.usuario.workers.dev" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label for="syncTokenInput">Token de sincronización (Bearer)</label>
+        <input id="syncTokenInput" type="password" placeholder="Tu token secreto" autocomplete="off">
+      </div>
+      <div class="row" style="margin-top:14px;gap:8px">
+        <button class="btn-primary" data-action="save-sync-config" type="button" style="flex:1">Guardar</button>
+        <button class="btn-ghost" data-action="test-sync" type="button" style="flex:1">Probar</button>
+      </div>
+      <div style="height:10px"></div>
+      <button class="btn-ghost" data-action="manual-sync" type="button" style="width:100%">Sincronizar ahora</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 

@@ -10,6 +10,7 @@ import { CATALOG, DAY_BY_ID, EXERCISE_BY_ID } from './catalog.js';
 import {
   annulEvent, measurementEvent, sessionEvent, setEvent, toNdjson,
 } from './event-log.js';
+import { flushOutbox } from './sync.js';
 
 export const APP_VERSION = '2.0.0';
 export const EXPORT_SCHEMA = 1;
@@ -45,13 +46,15 @@ export function createStore() {
 
     async init(indexedDBImpl) {
       conn = await db.openDb(indexedDBImpl);
-      const [sets, sessions, measurements, activeSessionId, lastExportAt, eventOutbox] = await Promise.all([
+      const [sets, sessions, measurements, activeSessionId, lastExportAt, eventOutbox, syncEndpoint, syncToken] = await Promise.all([
         db.getAll(conn, db.STORES.sets),
         db.getAll(conn, db.STORES.sessions),
         db.getAll(conn, db.STORES.measurements),
         db.getMeta(conn, 'activeSessionId', null),
         db.getMeta(conn, 'lastExportAt', null),
         db.getMeta(conn, 'eventOutbox', []),
+        db.getMeta(conn, 'syncEndpoint', ''),
+        db.getMeta(conn, 'syncToken', ''),
       ]);
       state.sets = sets;
       state.sessions = sessions;
@@ -65,6 +68,8 @@ export function createStore() {
       await db.putMany(conn, db.STORES.measurements, migratedMeasurements);
       state.lastExportAt = lastExportAt;
       state.eventOutbox = Array.isArray(eventOutbox) ? eventOutbox : [];
+      state.syncEndpoint = syncEndpoint || '';
+      state.syncToken = syncToken || '';
       // Solo se considera activa si la sesión existe y sigue abierta.
       const active = sessions.find((s) => s.id === activeSessionId);
       state.activeSessionId = active && active.status === 'open' ? activeSessionId : null;
@@ -76,7 +81,39 @@ export function createStore() {
     async queueEvent(item) {
       state.eventOutbox.push(item);
       await db.setMeta(conn, 'eventOutbox', state.eventOutbox);
+      // Auto-sincronización transparente en segundo plano
+      try {
+        flushOutbox(this).catch(() => {});
+      } catch (_) { /* noop */ }
       return item;
+    },
+
+    async removeEventsFromOutbox(eventIds) {
+      const idSet = new Set(eventIds);
+      state.eventOutbox = state.eventOutbox.filter((e) => !idSet.has(e.id));
+      await db.setMeta(conn, 'eventOutbox', state.eventOutbox);
+      emit();
+    },
+
+    async getSyncConfig() {
+      const [endpoint, token] = await Promise.all([
+        db.getMeta(conn, 'syncEndpoint', state.syncEndpoint || ''),
+        db.getMeta(conn, 'syncToken', state.syncToken || ''),
+      ]);
+      return { endpoint: endpoint || '', token: token || '' };
+    },
+
+    async setSyncConfig({ endpoint, token }) {
+      state.syncEndpoint = endpoint ? String(endpoint).trim() : '';
+      state.syncToken = token ? String(token).trim() : '';
+      await Promise.all([
+        db.setMeta(conn, 'syncEndpoint', state.syncEndpoint),
+        db.setMeta(conn, 'syncToken', state.syncToken),
+      ]);
+      emit();
+      try {
+        flushOutbox(this).catch(() => {});
+      } catch (_) { /* noop */ }
     },
 
     eventLogExport() {

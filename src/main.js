@@ -11,6 +11,9 @@ import {
   fmtNum, fmtSet, fmtWeight, fmtDateShort, relDay, fmtClock, fmtElapsed,
   prescriptionLine, sparkline, esc, summarizeSets,
 } from './format.js';
+import {
+  flushOutbox, getSyncState, onSyncChange, testSyncConnection, syncBadgeText, SYNC_STATUS,
+} from './sync.js';
 
 const store = createStore();
 const view = document.getElementById('view');
@@ -42,6 +45,61 @@ function toast(msg) {
 function buzz(ms = 12) {
   if (navigator.vibrate) { try { navigator.vibrate(ms); } catch { /* opcional */ } }
 }
+
+function updateSyncBadge(syncState = getSyncState()) {
+  const badgeEl = document.getElementById('syncBadge');
+  if (badgeEl) {
+    badgeEl.textContent = syncBadgeText(syncState.status);
+    const titles = {
+      [SYNC_STATUS.SYNCED]: 'Sincronizado con la nube',
+      [SYNC_STATUS.SYNCING]: 'Sincronizando eventos con la nube...',
+      [SYNC_STATUS.PENDING]: `${store.state.eventOutbox?.length || 0} eventos pendientes de sincronizar`,
+      [SYNC_STATUS.ERROR]: `Error de sincronización: ${syncState.lastError || 'Desconocido'}`,
+    };
+    badgeEl.title = titles[syncState.status] || 'Sincronización';
+  }
+
+  const modalBadge = document.getElementById('syncModalBadge');
+  const modalStatus = document.getElementById('syncModalStatusText');
+  const modalDetail = document.getElementById('syncModalDetail');
+  if (modalBadge) modalBadge.textContent = syncBadgeText(syncState.status);
+  if (modalStatus) {
+    const labels = {
+      [SYNC_STATUS.SYNCED]: 'Sincronizado',
+      [SYNC_STATUS.SYNCING]: 'Sincronizando...',
+      [SYNC_STATUS.PENDING]: 'Pendiente de envío',
+      [SYNC_STATUS.ERROR]: 'Error de sincronización',
+    };
+    modalStatus.textContent = labels[syncState.status] || 'Sincronización';
+  }
+  if (modalDetail) {
+    if (syncState.status === SYNC_STATUS.ERROR && syncState.lastError) {
+      modalDetail.textContent = syncState.lastError;
+    } else {
+      const n = store.state.eventOutbox?.length || 0;
+      modalDetail.textContent = `${n} evento${n === 1 ? '' : 's'} en cola local`;
+    }
+  }
+}
+
+onSyncChange((state) => {
+  updateSyncBadge(state);
+  if (ui.tab === 'ajustes') render();
+});
+
+window.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    flushOutbox(store).catch(() => {});
+  }
+});
+
+window.addEventListener('online', () => {
+  flushOutbox(store).catch(() => {});
+});
+
+window.addEventListener('pagehide', () => {
+  flushOutbox(store, { keepalive: true }).catch(() => {});
+});
 
 /** Series del ejercicio en la última sesión ANTERIOR a la actual. */
 function previousSets(exerciseId, currentSessionId) {
@@ -81,22 +139,9 @@ function renderIdle() {
     </div>`;
   }).join('');
 
-  const backup = store.backupStatus();
-  const warn = backup.overdue ? `
-    <div class="card tappable warnbar" data-action="go-backup">
-      <div class="row">
-        <span>⚠️</span>
-        <div class="ex-title">
-          <div class="ex-name">${backup.pending} sesiones sin respaldar</div>
-          <div class="ex-presc">${backup.never ? 'Nunca has exportado' : `Último respaldo hace ${backup.days} días`} · toca para exportar</div>
-        </div>
-      </div>
-    </div>` : '';
-
   return `
     <h1>Hoy</h1>
     <p class="sub">${recent.length ? `Última sesión ${relDay(recent[0].date)} · ${esc(recent[0].dayLabel)}` : 'Sin sesiones todavía. Empieza cuando quieras.'}</p>
-    ${warn}
 
     <div class="card">
       <div class="ex-name">${esc(day.label)} · ${esc(day.name)}</div>
@@ -441,6 +486,20 @@ function measureCard(title, rows, unit) {
 function renderAjustes() {
   const s = store.state;
   const b = store.backupStatus();
+  const syncState = getSyncState();
+  const outboxCount = s.eventOutbox?.length || 0;
+
+  const syncStateText = {
+    [SYNC_STATUS.SYNCED]: 'Todo sincronizado',
+    [SYNC_STATUS.SYNCING]: 'Sincronizando con la nube...',
+    [SYNC_STATUS.PENDING]: `${outboxCount} evento${outboxCount === 1 ? '' : 's'} pendiente${outboxCount === 1 ? '' : 's'}`,
+    [SYNC_STATUS.ERROR]: 'Error en la sincronización',
+  }[syncState.status] || 'Sincronización lista';
+
+  const syncDetail = syncState.status === SYNC_STATUS.ERROR && syncState.lastError
+    ? syncState.lastError
+    : (s.syncEndpoint ? `Conectado a ${esc(s.syncEndpoint.replace(/^https?:\/\//, ''))}` : 'Sin configurar aún');
+
   return `
     <h1>Ajustes</h1>
     <p class="sub">Gym ${APP_VERSION} · rutina ${esc(CATALOG.routineVersion)}</p>
@@ -451,12 +510,26 @@ function renderAjustes() {
       <div class="stat"><div class="n">${s.measurements.length}</div><div class="l">medidas</div></div>
     </div>
 
-    <h2>Respaldo</h2>
-    <div class="card ${b.overdue ? 'warnbar' : ''}">
-      <div class="ex-name">${b.never ? 'Nunca has exportado' : `Último respaldo: ${relDay(b.lastExportAt.slice(0, 10))}`}</div>
-      <div class="ex-presc">${b.pending === 0 ? 'Todo respaldado.' : `${b.pending} ${b.pending === 1 ? 'sesión' : 'sesiones'} sin respaldar.`}</div>
-      <div style="height:10px"></div>
-      <p class="small muted">Los datos viven solo en este dispositivo. Exporta cada semana y guarda el archivo en Drive o en el vault: es también lo que leen los agentes para analizar tu entrenamiento.</p>
+    <h2>Sincronización en segundo plano</h2>
+    <div class="card">
+      <div class="row">
+        <span style="font-size:1.6rem">${syncBadgeText(syncState.status)}</span>
+        <div class="ex-title">
+          <div class="ex-name">${syncStateText}</div>
+          <div class="ex-presc">${syncDetail}</div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="row" style="gap:8px">
+        <button class="btn-primary" data-action="open-sync-modal" type="button" style="flex:1">⚙️ Configurar</button>
+        <button data-action="manual-sync" type="button" style="flex:1">☁️ Sincronizar</button>
+      </div>
+    </div>
+
+    <h2>Respaldo de emergencia (Manual)</h2>
+    <div class="card">
+      <div class="ex-name">${b.never ? 'Sin exportaciones manuales recientes' : `Último respaldo manual: ${relDay(b.lastExportAt.slice(0, 10))}`}</div>
+      <div class="ex-presc">Exporta una copia JSON de emergencia o importa un respaldo previo en este dispositivo.</div>
       <div style="height:10px"></div>
       <button class="btn-primary" data-action="export" type="button">⬇ Exportar copia (JSON)</button>
       <div style="height:8px"></div>
@@ -746,6 +819,60 @@ document.addEventListener('click', async (ev) => {
       }
       break;
 
+    case 'open-sync-modal': {
+      const cfg = await store.getSyncConfig();
+      const ep = document.getElementById('syncEndpointInput');
+      const tk = document.getElementById('syncTokenInput');
+      if (ep) ep.value = cfg.endpoint || '';
+      if (tk) tk.value = cfg.token || '';
+      document.getElementById('syncModal')?.classList.remove('hidden');
+      updateSyncBadge();
+      break;
+    }
+
+    case 'close-sync-modal':
+      document.getElementById('syncModal')?.classList.add('hidden');
+      break;
+
+    case 'save-sync-config': {
+      const endpoint = document.getElementById('syncEndpointInput')?.value.trim() || '';
+      const token = document.getElementById('syncTokenInput')?.value.trim() || '';
+      await store.setSyncConfig({ endpoint, token });
+      toast('Ajustes de sincronización guardados');
+      document.getElementById('syncModal')?.classList.add('hidden');
+      const res = await flushOutbox(store, { force: true });
+      if (res.ok && res.sent > 0) toast(`✓ ${res.sent} eventos sincronizados`);
+      break;
+    }
+
+    case 'test-sync': {
+      const endpoint = document.getElementById('syncEndpointInput')?.value.trim() || '';
+      const token = document.getElementById('syncTokenInput')?.value.trim() || '';
+      if (!endpoint || !token) {
+        toast('Ingresa endpoint y token para probar');
+        break;
+      }
+      toast('Probando conexión...');
+      const res = await testSyncConnection(endpoint, token);
+      if (res.ok) {
+        toast('✓ Conexión exitosa con el servidor');
+      } else {
+        toast(`⚠️ ${res.error}`);
+      }
+      break;
+    }
+
+    case 'manual-sync': {
+      toast('Sincronizando...');
+      const res = await flushOutbox(store, { force: true });
+      if (res.ok) {
+        toast(res.sent > 0 ? `✓ Sincronizados ${res.sent} eventos` : '✓ Todo al día (0 pendientes)');
+      } else {
+        toast(`⚠️ ${res.error || res.reason}`);
+      }
+      break;
+    }
+
     default: break;
   }
 });
@@ -840,7 +967,11 @@ setInterval(() => {
 
 store.subscribe(() => {});
 store.init()
-  .then(() => render())
+  .then(() => {
+    render();
+    updateSyncBadge();
+    flushOutbox(store).catch(() => {});
+  })
   .catch((err) => {
     view.innerHTML = `<div class="empty"><span class="big">⚠️</span>No se pudo abrir la base de datos local.<br><span class="small">${esc(err.message)}</span></div>`;
   });
