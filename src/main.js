@@ -15,6 +15,9 @@ import {
 import {
   flushOutbox, getSyncState, onSyncChange, testSyncConnection, syncBadgeText, SYNC_STATUS, initSyncFromStore,
 } from './sync.js';
+import {
+  beep, cancelRestPush, enablePush, keepScreenOn, pushPermission, scheduleRestPush, unlockAudio,
+} from './rest-alert.js';
 
 const store = createStore();
 const view = document.getElementById('view');
@@ -36,11 +39,11 @@ const ui = {
 // --- utilidades de UI -------------------------------------------------------
 
 let toastTimer = null;
-function toast(msg) {
+function toast(msg, ms = 1900) {
   toastEl.textContent = msg;
   toastEl.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1900);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
 }
 
 function buzz(ms = 12) {
@@ -306,16 +309,34 @@ function buildDraft(session, p, ex, mine) {
   };
 }
 
+/** Series del mismo ejercicio guardadas antes que `set` (de esta sesión o anteriores). */
+function setsBefore(set) {
+  return store.state.sets.filter((s) => s.exerciseId === set.exerciseId
+    && s.id !== set.id && String(s.createdAt) < String(set.createdAt));
+}
+
+function recordText(r) {
+  if (r.type === 'peso') return `peso ${fmtNum(r.value)} kg (antes ${fmtNum(r.before)})`;
+  if (r.type === '1rm') return `1RM est. ${fmtNum(r.value)} kg (antes ${fmtNum(r.before)})`;
+  return `${r.value} reps con ese peso (antes ${r.before})`;
+}
+
 function setList(sets) {
   const best = sets.length ? sets.reduce((a, b) => ((b.e1rm || 0) > (a.e1rm || 0) ? b : a)) : null;
-  return `<div class="setlist">${sets.map((s) => `
+  return `<div class="setlist">${sets.map((s) => {
+    const isRecord = M.personalRecords(setsBefore(s), s).length > 0;
+    const mark = isRecord
+      ? '<span class="pr record">récord</span>'
+      : (best && s.id === best.id && sets.length > 1 ? '<span class="pr">top</span>' : '');
+    return `
     <div class="setrow">
       <span class="idx">${s.setIndex}</span>
       <span class="val">${esc(fmtSet(s))}</span>
-      ${best && s.id === best.id && sets.length > 1 ? '<span class="pr">top</span>' : ''}
+      ${mark}
       <button data-action="edit-set" data-id="${s.id}" type="button" aria-label="Editar serie">Editar</button>
       <button data-action="del-set" data-id="${s.id}" type="button" aria-label="Borrar serie">✕</button>
-    </div>`).join('')}</div>`;
+    </div>`;
+  }).join('')}</div>`;
 }
 
 // --- pestaña HISTORIAL ------------------------------------------------------
@@ -339,12 +360,53 @@ function renderHistorial() {
   return `
     <h1>Historial</h1>
     <p class="sub">${sessions.length} sesiones · ${store.state.sets.length} series registradas</p>
+    ${muscleVolumeCard()}
     <h2>Progresión por ejercicio</h2>
     <select id="exPicker" data-action="pick-history-ex">${options}</select>
     ${exerciseProgressCard(exId)}
     <h2>Sesiones</h2>
     ${sessions.map(sessionCard).join('')}
   `;
+}
+
+const MUSCLE_LABEL = {
+  pecho: 'Pecho', espalda: 'Espalda', hombro: 'Hombro', brazo: 'Brazo', pierna: 'Pierna', core: 'Core', otro: 'Otro',
+};
+
+// Series hechas por grupo esta semana (lunes a domingo) frente a las que la
+// rutina prescribe en sus 6 días. La meta sale del plan, no de una tabla aparte.
+function muscleVolumeCard() {
+  const today = M.localDate();
+  const start = M.weekStart(today);
+  const planned = M.plannedSetsByMuscle(CATALOG.days, EXERCISE_BY_ID);
+  const done = M.setsByMuscle(store.state.sets, EXERCISE_BY_ID, start, M.addDays(start, 6));
+  const lastWeek = M.setsByMuscle(store.state.sets, EXERCISE_BY_ID, M.addDays(start, -7), M.addDays(start, -1));
+  const muscles = [...new Set([...Object.keys(planned), ...Object.keys(done)])]
+    .sort((a, b) => (planned[b] || 0) - (planned[a] || 0));
+  const daysGone = Math.round((new Date(`${today}T12:00`) - new Date(`${start}T12:00`)) / 86400000) + 1;
+
+  const rows = muscles.map((m) => {
+    const goal = planned[m] || 0;
+    const n = done[m] || 0;
+    const pct = goal ? Math.min(100, Math.round((n / goal) * 100)) : 100;
+    const tone = !goal ? 'none' : n >= goal ? 'up' : n >= goal * (daysGone / 7) ? 'flat' : 'down';
+    return `
+      <div class="muscle-row">
+        <div class="row small">
+          <span>${esc(MUSCLE_LABEL[m] || m)}</span>
+          <span class="right nums"><span class="badge ${tone}">${n}/${goal || '—'}</span></span>
+        </div>
+        <div class="bar"><div class="bar-fill ${tone}" style="width:${pct}%"></div></div>
+        <div class="muted small">semana pasada: ${lastWeek[m] || 0}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <h2>Series por músculo · esta semana</h2>
+    <div class="card">
+      ${rows}
+      <p class="muted small" style="margin-top:10px">Meta: lo que prescribe la rutina ${esc(CATALOG.routineVersion)} en la semana. Ámbar = vas al ritmo de los días que van (${daysGone} de 7); rojo = atrasado.</p>
+    </div>`;
 }
 
 function exerciseProgressCard(exerciseId) {
@@ -677,6 +739,11 @@ function renderAjustes() {
       </div>
     </div>
 
+    <h2>Aviso de descanso en el reloj</h2>
+    <div class="card">
+      ${restAlertCard()}
+    </div>
+
     <h2>Respaldo de emergencia (Manual)</h2>
     <div class="card">
       <div class="ex-name">${b.never ? 'Sin exportaciones manuales recientes' : `Último respaldo manual: ${relDay(b.lastExportAt.slice(0, 10))}`}</div>
@@ -710,6 +777,27 @@ function renderAjustes() {
   `;
 }
 
+function restAlertCard() {
+  const perm = pushPermission();
+  if (perm === 'unsupported') {
+    return '<p class="small muted">Este navegador no admite avisos. En el iPhone, abre Gym desde su ícono en la pantalla de inicio.</p>';
+  }
+  if (perm === 'granted') {
+    return `
+      <div class="ex-name">Activado</div>
+      <div class="ex-presc">Al terminar cada descanso llega una notificación; con el iPhone bloqueado, el Apple Watch te toca la muñeca.</div>
+      <div style="height:10px"></div>
+      <button data-action="test-push" type="button" style="width:100%">Probar: aviso en 10 s</button>`;
+  }
+  return `
+    <div class="ex-name">${perm === 'denied' ? 'Notificaciones bloqueadas' : 'Desactivado'}</div>
+    <div class="ex-presc">${perm === 'denied'
+      ? 'Actívalas en Configuración → Notificaciones → Gym y vuelve aquí.'
+      : 'El iPhone no deja vibrar a una web: el aviso llega como notificación desde gym-sync y el Apple Watch la reenvía.'}</div>
+    <div style="height:10px"></div>
+    <button class="btn-primary" data-action="enable-push" type="button" style="width:100%">Activar aviso</button>`;
+}
+
 // --- render + eventos -------------------------------------------------------
 
 const VIEWS = { hoy: renderHoy, historial: renderHistorial, cuerpo: renderCuerpo, ajustes: renderAjustes };
@@ -719,6 +807,7 @@ let scrolledFor = null;
 function render() {
   if (!store.state.ready) { view.innerHTML = '<div class="empty">Cargando…</div>'; return; }
   view.innerHTML = VIEWS[ui.tab]();
+  keepScreenOn(Boolean(store.activeSession()));
   for (const b of document.querySelectorAll('.tab')) {
     b.classList.toggle('active', b.dataset.tab === ui.tab);
   }
@@ -825,8 +914,9 @@ document.addEventListener('click', async (ev) => {
       const p = planItem(session, exId);
       const mine = store.setsOfExerciseInSession(session.id, exId);
       const d = ui.draft;
+      unlockAudio();
 
-      await store.saveSet({
+      const saved = await store.saveSet({
         id: d.setId || undefined,
         sessionId: session.id,
         exerciseId: exId,
@@ -841,7 +931,13 @@ document.addEventListener('click', async (ev) => {
 
       buzz(18);
       const after = store.setsOfExerciseInSession(session.id, exId);
-      toast(d.setId ? 'Serie actualizada' : `Serie ${after.length} guardada`);
+      const records = d.setId ? [] : M.personalRecords(setsBefore(saved), saved);
+      if (records.length) {
+        buzz([40, 60, 40]);
+        toast(`Récord: ${records.map(recordText).join(' · ')}`, 3500);
+      } else {
+        toast(d.setId ? 'Serie actualizada' : `Serie ${after.length} guardada`);
+      }
 
       if (!d.setId && p?.restSec) startRest(p.restSec);
 
@@ -955,6 +1051,18 @@ document.addEventListener('click', async (ev) => {
       render();
       break;
     }
+
+    case 'enable-push': {
+      const res = await enablePush(store);
+      toast(res.ok ? 'Aviso activado' : `Error: ${res.error}`, res.ok ? 1900 : 4000);
+      render();
+      break;
+    }
+
+    case 'test-push':
+      scheduleRestPush(store, Date.now() + 10000);
+      toast('Bloquea el iPhone: en 10 s debe llegar el aviso', 3500);
+      break;
 
     case 'del-measure':
       await store.deleteMeasurement(el.dataset.id);
@@ -1095,10 +1203,19 @@ async function exportBackup() {
 let restTimer = null;
 function startRest(seconds) {
   ui.restEndsAt = Date.now() + seconds * 1000;
+  scheduleRestPush(store, ui.restEndsAt);
   restEl.classList.remove('hidden');
   tickRest();
   clearInterval(restTimer);
   restTimer = setInterval(tickRest, 250);
+}
+
+/** ±15 s sobre el descanso en curso; el aviso del reloj se reagenda. */
+function adjustRest(deltaSec) {
+  if (!ui.restEndsAt) return;
+  ui.restEndsAt = Math.max(Date.now() + 5000, ui.restEndsAt + deltaSec * 1000);
+  scheduleRestPush(store, ui.restEndsAt);
+  tickRest();
 }
 
 function tickRest() {
@@ -1106,21 +1223,27 @@ function tickRest() {
   const left = (ui.restEndsAt - Date.now()) / 1000;
   if (left <= 0) {
     restLabel.textContent = '0:00';
+    // Con la app a la vista: pitido (y vibración donde exista). Con el iPhone
+    // bloqueado, el aviso lo da el push que ya agendó gym-sync.
+    beep();
     buzz([60, 40, 60]);
-    stopRest();
+    stopRest({ fromTimer: true });
     return;
   }
   restLabel.textContent = fmtClock(left);
 }
 
-function stopRest() {
+function stopRest({ fromTimer = false } = {}) {
+  if (!fromTimer && ui.restEndsAt) cancelRestPush(store);
   clearInterval(restTimer);
   restTimer = null;
   ui.restEndsAt = null;
   restEl.classList.add('hidden');
 }
 
-document.getElementById('restSkip').addEventListener('click', stopRest);
+document.getElementById('restSkip').addEventListener('click', () => stopRest());
+document.getElementById('restMinus').addEventListener('click', () => adjustRest(-15));
+document.getElementById('restPlus').addEventListener('click', () => adjustRest(15));
 
 // Cronómetro de la sesión: actualiza solo ese nodo, sin re-render completo
 // (un re-render mientras escribes borraría lo que estás tecleando).

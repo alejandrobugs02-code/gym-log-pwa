@@ -287,6 +287,54 @@ export function volumeByMuscle(sets, exerciseById, fromDate, toDate) {
   return Object.values(out).sort((a, b) => b.volumeKg - a.volumeKg);
 }
 
+/**
+ * Récords que bate `set` frente a las series anteriores del mismo ejercicio.
+ * La primera vez que se hace un ejercicio no hay récord: no hay contra qué.
+ * Devuelve [{ type: 'peso' | '1rm' | 'reps', value, before }].
+ */
+export function personalRecords(previous, set) {
+  if (!set || set.isWarmup || set.kind !== 'peso') return [];
+  const prev = previous.filter((s) => s.exerciseId === set.exerciseId && s.id !== set.id
+    && !s.isWarmup && s.kind === 'peso');
+  if (!prev.length) return [];
+  const out = [];
+  const topWeight = Math.max(...prev.map((s) => s.weightKg || 0));
+  if (set.weightKg > topWeight) out.push({ type: 'peso', value: set.weightKg, before: topWeight });
+  const topE1rm = Math.max(...prev.map((s) => s.e1rm || 0));
+  if ((set.e1rm || 0) > topE1rm + 0.05) out.push({ type: '1rm', value: set.e1rm, before: topE1rm });
+  const sameOrHeavier = prev.filter((s) => s.weightKg >= set.weightKg);
+  if (sameOrHeavier.length) {
+    const topReps = Math.max(...sameOrHeavier.map((s) => s.reps || 0));
+    if (set.reps > topReps) out.push({ type: 'reps', value: set.reps, before: topReps });
+  }
+  return out;
+}
+
+/** Series efectivas (sin calentamiento, de cualquier tipo) por grupo muscular en un rango. */
+export function setsByMuscle(sets, exerciseById, fromDate, toDate) {
+  const out = {};
+  for (const s of sets) {
+    if (s.isWarmup) continue;
+    if (fromDate && s.date < fromDate) continue;
+    if (toDate && s.date > toDate) continue;
+    const muscle = exerciseById[s.exerciseId]?.muscle || 'otro';
+    out[muscle] = (out[muscle] || 0) + 1;
+  }
+  return out;
+}
+
+/** Series por grupo muscular que la rutina prescribe en una semana (todos sus días). */
+export function plannedSetsByMuscle(days, exerciseById) {
+  const out = {};
+  for (const day of days) {
+    for (const p of day.plan || []) {
+      const muscle = exerciseById[p.exerciseId]?.muscle || 'otro';
+      out[muscle] = (out[muscle] || 0) + (Number(p.sets) || 0);
+    }
+  }
+  return out;
+}
+
 export function sessionVolumeKg(sets) {
   return round(
     sets.filter((s) => !s.isWarmup && s.kind === 'peso')

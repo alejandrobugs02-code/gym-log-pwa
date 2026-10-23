@@ -8,7 +8,7 @@
 // arranque en vez de servir el viejo desde disco. En desarrollo (`npm run
 // serve`) queda `gym-dev`, que es correcto porque solo hay una versión.
 
-const CACHE = 'gym-412f9a7ecfbf';
+const CACHE = 'gym-e332da27c831';
 const SHELL = [
   './',
   './index.html',
@@ -23,6 +23,7 @@ const SHELL = [
   './src/catalog.js',
   './src/sync.js',
   './src/rescue.js',
+  './src/rest-alert.js',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -61,5 +62,25 @@ self.addEventListener('fetch', (ev) => {
         .catch(() => hit);
       return hit || fresh;
     }),
+  );
+});
+
+// Aviso de fin de descanso (src/rest-alert.js + gym-sync). El push llega vacío:
+// el texto vive aquí. iOS exige mostrar una notificación por cada push.
+self.addEventListener('push', (ev) => {
+  ev.waitUntil(self.registration.showNotification('Descanso terminado', {
+    body: 'Siguiente serie',
+    tag: 'descanso',
+    renotify: true,
+    icon: './icons/icon-192.png',
+  }));
+});
+
+self.addEventListener('notificationclick', (ev) => {
+  ev.notification.close();
+  ev.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => (
+      wins.length ? wins[0].focus() : self.clients.openWindow('./')
+    )),
   );
 });
