@@ -10,6 +10,37 @@ export function fmtNum(n) {
   return String(Math.round(v * 100) / 100);
 }
 
+/** Horas decimales como las muestra el Apple Watch: 7.5 → "7 h 30 min". */
+export function fmtHours(hours) {
+  const v = Number(hours);
+  if (!Number.isFinite(v) || v < 0) return '—';
+  let h = Math.floor(v);
+  let min = Math.round((v - h) * 60);
+  if (min === 60) { h += 1; min = 0; }
+  if (!min) return `${h} h`;
+  return h ? `${h} h ${min} min` : `${min} min`;
+}
+
+/** Versión corta para las cifras grandes: 7.38 → "7h23", 8 → "8h". */
+export function fmtHoursCompact(hours) {
+  const full = fmtHours(hours);
+  if (full === '—') return full;
+  const [, h, min] = full.match(/^(?:(\d+) h)?\s*(?:(\d+) min)?$/) || [];
+  if (!h) return `${min}m`;
+  return min ? `${h}h${min.padStart(2, '0')}` : `${h}h`;
+}
+
+/** Horas y minutos escritos por separado → horas decimales (null si no hay nada). */
+export function hoursFromParts(h, min) {
+  const hs = String(h ?? '').trim();
+  const ms = String(min ?? '').trim();
+  if (hs === '' && ms === '') return null;
+  const hn = Number(hs.replace(',', '.')) || 0;
+  const mn = Number(ms.replace(',', '.')) || 0;
+  const total = hn + mn / 60;
+  return Number.isFinite(total) && total > 0 ? Math.round(total * 100) / 100 : null;
+}
+
 export function fmtWeight(weight, unit) {
   return `${fmtNum(weight)} ${unit || 'kg'}`;
 }

@@ -8,7 +8,7 @@ import {
 } from './model.js';
 import { CATALOG, DAY_BY_ID, EXERCISE_BY_ID } from './catalog.js';
 import {
-  annulEvent, measurementEvent, sessionEvent, setEvent, toNdjson,
+  annulEvent, measurementEvent, recoveryEvent, sessionEvent, setEvent, toNdjson,
 } from './event-log.js';
 import { flushOutbox } from './sync.js';
 
@@ -16,7 +16,15 @@ export const APP_VERSION = '2.0.0';
 export const EXPORT_SCHEMA = 1;
 
 export function canonicalMeasurementType(type) {
-  return ({ peso: 'weight', cintura: 'waist' })[type] || type || 'weight';
+  return ({ peso: 'weight', cintura: 'waist', sueno: 'sleep' })[type] || type || 'weight';
+}
+
+const MEASUREMENT_UNITS = { weight: 'kg', waist: 'cm', sleep: 'h' };
+
+// Localmente el sueño convive con peso y cintura (una cifra por día), pero en
+// el log compartido es `recuperacion`, no `medida`.
+function logTipo(type) {
+  return type === 'sleep' ? 'recuperacion' : 'medida';
 }
 
 export function createStore() {
@@ -266,7 +274,7 @@ export function createStore() {
         id: newId(),
         type: canonicalType,
         value: Number(String(value).replace(',', '.')) || 0,
-        unit: unit || (canonicalType === 'waist' ? 'cm' : 'kg'),
+        unit: unit || MEASUREMENT_UNITS[canonicalType] || 'kg',
         date: date || localDate(),
         note: String(note || '').slice(0, 300),
         createdAt: new Date().toISOString(),
@@ -280,7 +288,8 @@ export function createStore() {
       } else {
         state.measurements.push(row);
       }
-      const logEvent = measurementEvent(row, dupe
+      const toEvent = canonicalType === 'sleep' ? recoveryEvent : measurementEvent;
+      const logEvent = toEvent(row, dupe
         ? { op: 'corregir', ref: dupe.logRef || dupe.id }
         : {});
       row.logRef = logEvent.id;
@@ -294,7 +303,7 @@ export function createStore() {
       const previous = state.measurements.find((m) => m.id === id);
       state.measurements = state.measurements.filter((m) => m.id !== id);
       await db.del(conn, db.STORES.measurements, id);
-      if (previous) await this.queueEvent(annulEvent({ tipo: 'medida', fecha: previous.date, ref: previous.logRef || previous.id }));
+      if (previous) await this.queueEvent(annulEvent({ tipo: logTipo(previous.type), fecha: previous.date, ref: previous.logRef || previous.id }));
       emit();
     },
 

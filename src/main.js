@@ -9,7 +9,7 @@ import { CATALOG, DAY_BY_ID, EXERCISE_BY_ID } from './catalog.js';
 import * as M from './model.js';
 import {
   fmtNum, fmtSet, fmtWeight, fmtDateShort, relDay, fmtClock, fmtElapsed,
-  prescriptionLine, sparkline, esc, summarizeSets,
+  prescriptionLine, sparkline, esc, summarizeSets, fmtHours, fmtHoursCompact, hoursFromParts,
 } from './format.js';
 import {
   flushOutbox, getSyncState, onSyncChange, testSyncConnection, syncBadgeText, SYNC_STATUS, initSyncFromStore,
@@ -50,6 +50,7 @@ function updateSyncBadge(syncState = getSyncState()) {
   const badgeEl = document.getElementById('syncBadge');
   if (badgeEl) {
     badgeEl.textContent = syncBadgeText(syncState.status);
+    badgeEl.dataset.status = syncState.status;
     const titles = {
       [SYNC_STATUS.SYNCED]: 'Sincronizado con la nube',
       [SYNC_STATUS.SYNCING]: 'Sincronizando eventos con la nube...',
@@ -62,7 +63,10 @@ function updateSyncBadge(syncState = getSyncState()) {
   const modalBadge = document.getElementById('syncModalBadge');
   const modalStatus = document.getElementById('syncModalStatusText');
   const modalDetail = document.getElementById('syncModalDetail');
-  if (modalBadge) modalBadge.textContent = syncBadgeText(syncState.status);
+  if (modalBadge) {
+    modalBadge.textContent = syncBadgeText(syncState.status);
+    modalBadge.dataset.status = syncState.status;
+  }
   if (modalStatus) {
     const labels = {
       [SYNC_STATUS.SYNCED]: 'Sincronizado',
@@ -308,7 +312,7 @@ function setList(sets) {
       <span class="idx">${s.setIndex}</span>
       <span class="val">${esc(fmtSet(s))}</span>
       ${best && s.id === best.id && sets.length > 1 ? '<span class="pr">top</span>' : ''}
-      <button data-action="edit-set" data-id="${s.id}" type="button" aria-label="Editar serie">✏️</button>
+      <button data-action="edit-set" data-id="${s.id}" type="button" aria-label="Editar serie">Editar</button>
       <button data-action="del-set" data-id="${s.id}" type="button" aria-label="Borrar serie">✕</button>
     </div>`).join('')}</div>`;
 }
@@ -320,7 +324,7 @@ function renderHistorial() {
 
   const trained = [...new Set(store.state.sets.map((s) => s.exerciseId))];
   if (!store.state.sessions.length) {
-    return '<h1>Historial</h1><div class="empty"><span class="big">📈</span>Cuando registres tu primera sesión, aquí verás la progresión por ejercicio.</div>';
+    return '<h1>Historial</h1><div class="empty">Cuando registres tu primera sesión, aquí verás la progresión por ejercicio.</div>';
   }
 
   const exId = ui.historyExercise && trained.includes(ui.historyExercise) ? ui.historyExercise : trained[0];
@@ -384,7 +388,7 @@ function exerciseProgressCard(exerciseId) {
     </div>`;
 }
 
-function renderChart(sp) {
+function renderChart(sp, unit = 'kg') {
   if (!sp) return '';
   const pts = sp.points.map((p) => `<circle class="pt" cx="${p.x}" cy="${p.y}" r="3"></circle>`).join('');
   return `
@@ -393,8 +397,8 @@ function renderChart(sp) {
       <path class="area" d="${sp.area}"></path>
       <path class="line" d="${sp.line}"></path>
       ${pts}
-      <text class="lbl" x="20" y="14">${fmtNum(sp.max)} kg</text>
-      <text class="lbl" x="20" y="${sp.height - 4}">${fmtNum(sp.min)} kg</text>
+      <text class="lbl" x="20" y="14">${fmtNum(sp.max)} ${unit}</text>
+      <text class="lbl" x="20" y="${sp.height - 4}">${fmtNum(sp.min)} ${unit}</text>
     </svg>`;
 }
 
@@ -424,31 +428,50 @@ function renderSessionDetail(id) {
 
 // --- pestaña CUERPO ---------------------------------------------------------
 
+// Objetivo de sueño del sistema físico (Brain/65_Gym/mapa-fisico.md, recovery.sleep_hours).
+const SLEEP_GOAL = { min: 7, targetMin: 7.5, targetMax: 8 };
+
 function renderCuerpo() {
   const peso = store.measurementsOfType('weight');
   const cintura = store.measurementsOfType('waist');
+  const sueno = store.measurementsOfType('sleep');
   const today = M.localDate();
   const pesoHoy = peso.find((m) => m.date === today);
   const cinturaHoy = cintura.find((m) => m.date === today);
+  const suenoHoy = sueno.find((m) => m.date === today);
+  const suenoH = suenoHoy ? Math.floor(suenoHoy.value) : '';
+  const suenoMin = suenoHoy ? Math.round((suenoHoy.value - Math.floor(suenoHoy.value)) * 60) : '';
 
   return `
     <h1>Cuerpo</h1>
-    <p class="sub">Una medida por día. Si te vuelves a pesar hoy, se corrige la de hoy.</p>
+    <p class="sub">Un registro por día. Si lo vuelves a guardar hoy, se corrige el de hoy.</p>
 
     <div class="card">
       <div class="field-pair">
         <div>
-          <label>Peso corporal (kg)</label>
+          <label for="m-peso">Peso corporal (kg)</label>
           <input id="m-peso" inputmode="decimal" enterkeyhint="done" value="${pesoHoy ? pesoHoy.value : ''}" placeholder="${peso.length ? fmtNum(peso[peso.length - 1].value) : '—'}">
         </div>
         <div>
-          <label>Cintura (cm)</label>
+          <label for="m-cintura">Cintura (cm)</label>
           <input id="m-cintura" inputmode="decimal" enterkeyhint="done" value="${cinturaHoy ? cinturaHoy.value : ''}" placeholder="${cintura.length ? fmtNum(cintura[cintura.length - 1].value) : '—'}">
         </div>
       </div>
-      <button class="btn-primary" data-action="save-measures" type="button">✓ Guardar medidas de hoy</button>
+      <label for="m-sueno-h">Sueño de anoche · Apple Watch</label>
+      <div class="field-pair">
+        <div class="unit-input">
+          <input id="m-sueno-h" inputmode="numeric" enterkeyhint="next" value="${suenoH}" placeholder="7" aria-label="Horas dormidas">
+          <span>h</span>
+        </div>
+        <div class="unit-input">
+          <input id="m-sueno-min" inputmode="numeric" enterkeyhint="done" value="${suenoMin}" placeholder="30" aria-label="Minutos dormidos">
+          <span>min</span>
+        </div>
+      </div>
+      <button class="btn-primary" data-action="save-measures" type="button">Guardar registro de hoy</button>
     </div>
 
+    ${sleepCard(sueno)}
     ${measureCard('Peso corporal', peso, 'kg')}
     ${measureCard('Cintura', cintura, 'cm')}
   `;
@@ -459,13 +482,8 @@ function measureCard(title, rows, unit) {
   const first = rows[0];
   const last = rows[rows.length - 1];
   const delta = M.round(last.value - first.value, 2);
-  const chart = rows.length > 1 ? renderChart(sparkline(rows.map((r) => r.value))) : '';
-  const recent = [...rows].reverse().slice(0, 6).map((r) => `
-    <div class="row small" style="padding:6px 0;border-top:1px solid var(--line)">
-      <span class="muted">${fmtDateShort(r.date)}</span>
-      <span class="right nums">${fmtNum(r.value)} ${unit}</span>
-      <button data-action="del-measure" data-id="${r.id}" type="button" aria-label="Borrar" style="min-height:30px;min-width:30px;padding:0 8px;background:transparent">✕</button>
-    </div>`).join('');
+  const chart = rows.length > 1 ? renderChart(sparkline(rows.map((r) => r.value)), unit) : '';
+  const recent = [...rows].reverse().slice(0, 6).map((r) => measureRow(r, `${fmtNum(r.value)} ${unit}`)).join('');
 
   return `
     <h2>${title}</h2>
@@ -476,6 +494,47 @@ function measureCard(title, rows, unit) {
         <div class="stat"><div class="n">${rows.length}</div><div class="l">registros</div></div>
       </div>
       <div style="height:12px"></div>
+      ${chart}
+      ${recent}
+    </div>`;
+}
+
+function measureRow(r, text) {
+  return `
+    <div class="row small" style="padding:6px 0;border-top:1px solid var(--line)">
+      <span class="muted">${fmtDateShort(r.date)}</span>
+      <span class="right nums">${text}</span>
+      <button data-action="del-measure" data-id="${r.id}" type="button" aria-label="Borrar" style="min-height:30px;min-width:30px;padding:0 8px;background:transparent">✕</button>
+    </div>`;
+}
+
+function sleepCard(rows) {
+  if (!rows.length) {
+    return `<h2>Sueño</h2><div class="card muted">Sin registros todavía. Meta: ${fmtNum(SLEEP_GOAL.targetMin)}-${SLEEP_GOAL.targetMax} h, nunca menos de ${SLEEP_GOAL.min} h.</div>`;
+  }
+  const last = rows[rows.length - 1];
+  // Promedio de los últimos 7 días calendario, no de los últimos 7 registros.
+  const since = M.localDate(new Date(Date.now() - 6 * 86400000));
+  const week = rows.filter((r) => r.date >= since);
+  const avg = week.length ? week.reduce((acc, r) => acc + r.value, 0) / week.length : null;
+  const nightsOk = week.filter((r) => r.value >= SLEEP_GOAL.min).length;
+  const tone = (v) => (v >= SLEEP_GOAL.targetMin ? 'up' : v >= SLEEP_GOAL.min ? 'flat' : 'down');
+  const chart = rows.length > 1
+    ? renderChart(sparkline(rows.slice(-30).map((r) => r.value)), 'h')
+    : '';
+  const recent = [...rows].reverse().slice(0, 7).map((r) => measureRow(
+    r, `<span class="badge ${tone(r.value)}">${fmtHours(r.value)}</span>`,
+  )).join('');
+
+  return `
+    <h2>Sueño</h2>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="n">${fmtHoursCompact(last.value)}</div><div class="l">última noche</div></div>
+        <div class="stat"><div class="n">${avg === null ? '—' : fmtHoursCompact(avg)}</div><div class="l">promedio 7 días</div></div>
+        <div class="stat"><div class="n">${nightsOk}/${week.length}</div><div class="l">noches ≥ ${SLEEP_GOAL.min} h</div></div>
+      </div>
+      <p class="muted small" style="margin-top:10px">Meta ${fmtNum(SLEEP_GOAL.targetMin)}-${SLEEP_GOAL.targetMax} h · mínimo ${SLEEP_GOAL.min} h${week.length < 5 ? ` · el promedio pide 5 noches de la semana (llevas ${week.length})` : ''}.</p>
       ${chart}
       ${recent}
     </div>`;
@@ -521,8 +580,8 @@ function renderAjustes() {
       </div>
       <div style="height:12px"></div>
       <div class="row" style="gap:8px">
-        <button class="btn-primary" data-action="open-sync-modal" type="button" style="flex:1">⚙️ Configurar</button>
-        <button data-action="manual-sync" type="button" style="flex:1">☁️ Sincronizar</button>
+        <button class="btn-primary" data-action="open-sync-modal" type="button" style="flex:1">Configurar</button>
+        <button data-action="manual-sync" type="button" style="flex:1">Sincronizar</button>
       </div>
     </div>
 
@@ -542,7 +601,7 @@ function renderAjustes() {
     <div class="card">
       <p class="small muted">Si entrenaste con Gym Log v2 y quedaron series sin sincronizar en este dispositivo, se pueden recuperar. Es solo lectura: no toca los datos antiguos.</p>
       <div style="height:10px"></div>
-      <button data-action="rescue" type="button" style="width:100%">🛟 Buscar y recuperar series antiguas</button>
+      <button data-action="rescue" type="button" style="width:100%">Buscar y recuperar series antiguas</button>
     </div>
 
     <h2>Rutina</h2>
@@ -700,7 +759,7 @@ document.addEventListener('click', async (ev) => {
           store.setsOfExerciseInSession(session.id, q.exerciseId).length < q.sets
         ));
         ui.openExercise = next ? next.exerciseId : null;
-        if (!next) toast('Todos los ejercicios completos 💪');
+        if (!next) toast('Todos los ejercicios completos');
       }
       ui.draft = null;
       render();
@@ -781,7 +840,12 @@ document.addEventListener('click', async (ev) => {
       let n = 0;
       if (peso !== '') { await store.saveMeasurement({ type: 'weight', value: peso, unit: 'kg' }); n += 1; }
       if (cintura !== '') { await store.saveMeasurement({ type: 'waist', value: cintura, unit: 'cm' }); n += 1; }
-      toast(n ? 'Medidas guardadas' : 'Nada que guardar');
+      const sueno = hoursFromParts(
+        document.getElementById('m-sueno-h').value,
+        document.getElementById('m-sueno-min').value,
+      );
+      if (sueno !== null) { await store.saveMeasurement({ type: 'sleep', value: sueno, unit: 'h' }); n += 1; }
+      toast(n ? 'Registro guardado' : 'Nada que guardar');
       render();
       break;
     }
@@ -857,7 +921,7 @@ document.addEventListener('click', async (ev) => {
       if (res.ok) {
         toast('✓ Conexión exitosa con el servidor');
       } else {
-        toast(`⚠️ ${res.error}`);
+        toast(`Error: ${res.error}`);
       }
       break;
     }
@@ -868,7 +932,7 @@ document.addEventListener('click', async (ev) => {
       if (res.ok) {
         toast(res.sent > 0 ? `✓ Sincronizados ${res.sent} eventos` : '✓ Todo al día (0 pendientes)');
       } else {
-        toast(`⚠️ ${res.error || res.reason}`);
+        toast(`Error: ${res.error || res.reason}`);
       }
       break;
     }
@@ -974,7 +1038,7 @@ store.init()
     flushOutbox(store).catch(() => {});
   })
   .catch((err) => {
-    view.innerHTML = `<div class="empty"><span class="big">⚠️</span>No se pudo abrir la base de datos local.<br><span class="small">${esc(err.message)}</span></div>`;
+    view.innerHTML = `<div class="empty">No se pudo abrir la base de datos local.<br><span class="small">${esc(err.message)}</span></div>`;
   });
 
 if ('serviceWorker' in navigator) {

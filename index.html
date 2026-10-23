@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#0b0d12">
+<meta name="theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,7 +22,7 @@
     <span class="topbar-logo">Gym</span>
   </div>
   <div class="topbar-right">
-    <button id="syncBadge" class="sync-badge" type="button" aria-label="Estado de sincronización" data-action="open-sync-modal" title="Sincronización">☁️✓</button>
+    <button id="syncBadge" class="sync-badge" type="button" aria-label="Estado de sincronización" data-action="open-sync-modal" data-status="synced" title="Sincronización">Al día</button>
   </div>
 </header>
 
@@ -35,10 +35,10 @@
 </div>
 
 <nav class="tabs" aria-label="Secciones">
-  <button class="tab" data-tab="hoy" type="button"><span class="tab-ico">🏋️</span><span>Hoy</span></button>
-  <button class="tab" data-tab="historial" type="button"><span class="tab-ico">📈</span><span>Historial</span></button>
-  <button class="tab" data-tab="cuerpo" type="button"><span class="tab-ico">⚖️</span><span>Cuerpo</span></button>
-  <button class="tab" data-tab="ajustes" type="button"><span class="tab-ico">⚙️</span><span>Ajustes</span></button>
+  <button class="tab" data-tab="hoy" type="button"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7v10M3 9.5v5M18 7v10M21 9.5v5M6 12h12"/></svg></span><span>Hoy</span></button>
+  <button class="tab" data-tab="historial" type="button"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 16l4-5 4 3 6-8"/></svg></span><span>Historial</span></button>
+  <button class="tab" data-tab="cuerpo" type="button"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 10a4.5 4.5 0 0 1 7 0M12 10l1.5-2"/></svg></span><span>Cuerpo</span></button>
+  <button class="tab" data-tab="ajustes" type="button"><span class="tab-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></span><span>Ajustes</span></button>
 </nav>
 
 <div id="syncModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="syncModalTitle">
@@ -50,7 +50,7 @@
     </div>
     <div class="modal-body">
       <div class="sync-status-box">
-        <span id="syncModalBadge" class="sync-modal-badge">☁️✓</span>
+        <span id="syncModalBadge" class="sync-modal-badge" data-status="synced">Al día</span>
         <div>
           <div id="syncModalStatusText" class="sync-status-text">Sincronizado</div>
           <div id="syncModalDetail" class="sync-detail-text">0 eventos pendientes</div>

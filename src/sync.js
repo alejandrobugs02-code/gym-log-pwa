@@ -17,10 +17,10 @@ export const SYNC_STATUS = {
 };
 
 export const SYNC_BADGE = {
-  [SYNC_STATUS.SYNCED]: '☁️✓',
-  [SYNC_STATUS.SYNCING]: '☁️↑',
-  [SYNC_STATUS.PENDING]: '☁️⏳',
-  [SYNC_STATUS.ERROR]: '☁️⚠️',
+  [SYNC_STATUS.SYNCED]: 'Al día',
+  [SYNC_STATUS.SYNCING]: 'Enviando',
+  [SYNC_STATUS.PENDING]: 'Pendiente',
+  [SYNC_STATUS.ERROR]: 'Error',
 };
 
 export function syncBadgeText(status) {

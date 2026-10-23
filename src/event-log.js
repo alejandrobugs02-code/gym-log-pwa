@@ -86,6 +86,20 @@ export function measurementEvent(row, { op = 'crear', ref, now } = {}) {
   });
 }
 
+// El sueño no es una `medida`: el contrato lo proyecta en `recovery_daily`
+// como `recuperacion` (sleep_hours), igual que el adaptador de Apple Health.
+export function recoveryEvent(row, { op = 'crear', ref, now } = {}) {
+  return event({
+    id: op === 'crear' ? row.id : undefined,
+    tipo: 'recuperacion',
+    fecha: row.date,
+    op,
+    ref,
+    now,
+    datos: { sleep_hours: row.value },
+  });
+}
+
 export function annulEvent(source, now = new Date()) {
   return event({
     tipo: source.tipo,
