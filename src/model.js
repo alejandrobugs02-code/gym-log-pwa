@@ -335,6 +335,41 @@ export function plannedSetsByMuscle(days, exerciseById) {
   return out;
 }
 
+/**
+ * Constancia por semanas (lunes a domingo) a partir de los días con al menos una serie.
+ * Una semana cuenta como cumplida con ceil(goal × minRatio) días: 5 de 6 con la cadencia
+ * mínima de mapa-fisico (training.cadence_min_ratio = 0.8).
+ * La racha cuenta semanas cumplidas seguidas hacia atrás; la semana en curso suma solo
+ * si ya está cumplida, y no la rompe mientras siga abierta.
+ */
+export function weeklyConsistency(trainedDates, today = localDate(), { goal = 6, minRatio = 0.8, weeks = 8 } = {}) {
+  const minimum = Math.ceil(goal * minRatio);
+  const days = new Set(trainedDates);
+  const current = weekStart(today);
+  const countWeek = (start) => {
+    let n = 0;
+    for (let i = 0; i < 7; i += 1) if (days.has(addDays(start, i))) n += 1;
+    return n;
+  };
+  const history = [];
+  for (let i = weeks - 1; i >= 0; i -= 1) {
+    const start = addDays(current, -7 * i);
+    history.push({ start, count: countWeek(start) });
+  }
+  const thisWeek = history[history.length - 1];
+  let streak = thisWeek.count >= minimum ? 1 : 0;
+  const first = days.size ? [...days].sort()[0] : today;
+  for (let start = addDays(current, -7); start >= weekStart(first); start = addDays(start, -7)) {
+    if (countWeek(start) < minimum) break;
+    streak += 1;
+  }
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(current, i);
+    return { date, trained: days.has(date), future: date > today };
+  });
+  return { goal, minimum, thisWeek: { ...thisWeek, days: weekDays }, streak, history };
+}
+
 export function sessionVolumeKg(sets) {
   return round(
     sets.filter((s) => !s.isWarmup && s.kind === 'peso')

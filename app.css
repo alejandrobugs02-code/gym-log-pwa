@@ -246,6 +246,21 @@ label { display: block; font-size: .82rem; color: var(--muted); margin: 0 0 6px;
 .bar-fill.flat { background: var(--warn); }
 .bar-fill.down { background: var(--bad); }
 
+/* --- constancia --- */
+
+.wk-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 12px; }
+.wk-day {
+  aspect-ratio: 1; display: grid; place-items: center; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--surface-2);
+  color: var(--muted); font-size: .78rem; font-weight: 700;
+}
+.wk-day.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.wk-day.future { opacity: .45; }
+.wk-bars { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; height: 40px; align-items: end; }
+.wk-bar { height: 100%; display: flex; align-items: flex-end; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+.wk-bar > div { width: 100%; background: var(--muted); }
+.wk-bar.ok > div { background: var(--good); }
+
 /* --- gráfico --- */
 
 .chart { width: 100%; height: 150px; display: block; }

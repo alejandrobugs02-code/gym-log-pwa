@@ -160,6 +160,8 @@ function renderIdle() {
       </button>
     </div>
 
+    ${consistencyCard()}
+
     <h2>Otro día</h2>
     <div class="chips">${chips}</div>
 
@@ -168,6 +170,44 @@ function renderIdle() {
 
     ${recent.length ? `<h2>Sesiones recientes</h2>${recent.map(sessionCard).join('')}` : ''}
   `;
+}
+
+// Cadencia mínima de mapa-fisico (training.cadence_min_ratio): 5 de los 6 días del plan.
+const CADENCE_MIN_RATIO = 0.8;
+const WEEKDAY_INITIALS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+function consistencyCard() {
+  const trained = [...new Set(store.state.sets.filter((s) => !s.isWarmup).map((s) => s.date))];
+  const c = M.weeklyConsistency(trained, M.localDate(), { goal: CATALOG.days.length, minRatio: CADENCE_MIN_RATIO });
+  const left = Math.max(0, c.minimum - c.thisWeek.count);
+  // Días que aún pueden sumar: los que vienen y hoy si todavía no entrenaste.
+  const daysLeft = c.thisWeek.days.filter((d) => d.future || (d.date === M.localDate() && !d.trained)).length;
+  const lastWeek = c.history[c.history.length - 2];
+  const status = left === 0
+    ? 'Semana cumplida'
+    : `Te ${left === 1 ? 'falta 1 día' : `faltan ${left} días`} para cumplir${left > daysLeft ? ' · esta semana ya no alcanza' : ''}`;
+  const dots = c.thisWeek.days.map((d, i) => `
+    <div class="wk-day ${d.trained ? 'on' : ''} ${d.future ? 'future' : ''}" title="${d.date}">
+      <span>${WEEKDAY_INITIALS[i]}</span>
+    </div>`).join('');
+  const bars = c.history.map((w) => `
+    <div class="wk-bar ${w.count >= c.minimum ? 'ok' : ''}" title="Semana del ${fmtDateShort(w.start)}: ${w.count}">
+      <div style="height:${Math.round((Math.min(w.count, c.goal) / c.goal) * 100)}%"></div>
+    </div>`).join('');
+
+  return `
+    <h2>Constancia</h2>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="n">${c.thisWeek.count}/${c.goal}</div><div class="l">días esta semana</div></div>
+        <div class="stat"><div class="n">${lastWeek.count}/${c.goal}</div><div class="l">semana pasada</div></div>
+        <div class="stat"><div class="n">${c.streak}</div><div class="l">${c.streak === 1 ? 'semana seguida' : 'semanas seguidas'}</div></div>
+      </div>
+      <div class="wk-days">${dots}</div>
+      <p class="small ${left === 0 ? '' : 'muted'}" style="margin:8px 0 10px">${status}. Cuenta como cumplida con ${c.minimum} de ${c.goal}.</p>
+      <div class="wk-bars" aria-label="Días entrenados por semana, últimas 8">${bars}</div>
+      <p class="muted small" style="margin-top:4px">Últimas 8 semanas</p>
+    </div>`;
 }
 
 function sessionCard(s) {
