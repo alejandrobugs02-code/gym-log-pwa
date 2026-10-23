@@ -10,6 +10,7 @@ import * as M from './model.js';
 import {
   fmtNum, fmtSet, fmtWeight, fmtDateShort, relDay, fmtClock, fmtElapsed,
   prescriptionLine, sparkline, esc, summarizeSets, fmtHours, fmtHoursCompact, hoursFromParts,
+  fmtSteps, stepsFromInput,
 } from './format.js';
 import {
   flushOutbox, getSyncState, onSyncChange, testSyncConnection, syncBadgeText, SYNC_STATUS, initSyncFromStore,
@@ -430,6 +431,8 @@ function renderSessionDetail(id) {
 
 // Objetivo de sueño del sistema físico (Brain/65_Gym/mapa-fisico.md, recovery.sleep_hours).
 const SLEEP_GOAL = { min: 7, targetMin: 7.5, targetMax: 8 };
+// Pasos diarios de mapa-fisico (recovery.steps.week_3_onward).
+const STEPS_GOAL = 8000;
 
 function renderCuerpo() {
   const peso = store.measurementsOfType('weight');
@@ -441,6 +444,8 @@ function renderCuerpo() {
   const suenoHoy = sueno.find((m) => m.date === today);
   const suenoH = suenoHoy ? Math.floor(suenoHoy.value) : '';
   const suenoMin = suenoHoy ? Math.round((suenoHoy.value - Math.floor(suenoHoy.value)) * 60) : '';
+  const pasos = store.measurementsOfType('steps');
+  const pasosHoy = pasos.find((m) => m.date === today);
 
   return `
     <h1>Cuerpo</h1>
@@ -468,10 +473,22 @@ function renderCuerpo() {
           <span>min</span>
         </div>
       </div>
+      <label for="m-pasos">Pasos · Apple Watch</label>
+      <div class="field-pair">
+        <div class="unit-input">
+          <input id="m-pasos" inputmode="numeric" enterkeyhint="done" value="${pasosHoy ? pasosHoy.value : ''}" placeholder="${pasos.length ? fmtSteps(pasos[pasos.length - 1].value) : '8.000'}" aria-label="Pasos del día">
+          <span>pasos</span>
+        </div>
+        <select id="m-pasos-dia" aria-label="Día de los pasos">
+          <option value="${today}">de hoy</option>
+          <option value="${M.addDays(today, -1)}">de ayer</option>
+        </select>
+      </div>
       <button class="btn-primary" data-action="save-measures" type="button">Guardar registro de hoy</button>
     </div>
 
     ${sleepCard(sueno)}
+    ${stepsCard(pasos, store.measurementsOfType('steps_week'))}
     ${measureCard('Peso corporal', peso, 'kg')}
     ${measureCard('Cintura', cintura, 'cm')}
   `;
@@ -537,6 +554,81 @@ function sleepCard(rows) {
       <p class="muted small" style="margin-top:10px">Meta ${fmtNum(SLEEP_GOAL.targetMin)}-${SLEEP_GOAL.targetMax} h · mínimo ${SLEEP_GOAL.min} h${week.length < 5 ? ` · el promedio pide 5 noches de la semana (llevas ${week.length})` : ''}.</p>
       ${chart}
       ${recent}
+    </div>`;
+}
+
+// Promedio de pasos por semana (lunes a domingo). Si se anotó el promedio
+// semanal que da la app Salud, ese manda: es la semana completa, mientras que
+// los días sueltos pueden ser solo los que te acordaste de apuntar.
+function stepsWeek(start, daily, weekly) {
+  const end = M.addDays(start, 6);
+  const declared = weekly.find((w) => w.date === start);
+  const days = daily.filter((r) => r.date >= start && r.date <= end);
+  if (declared) return { start, avg: declared.value, declared, days: days.length };
+  if (!days.length) return { start, avg: null, days: 0 };
+  return { start, avg: days.reduce((acc, r) => acc + r.value, 0) / days.length, days: days.length };
+}
+
+function stepsCard(daily, weekly) {
+  const today = M.localDate();
+  const thisWeek = M.weekStart(today);
+  const weeks = [0, 1, 2, 3].map((i) => stepsWeek(M.addDays(thisWeek, -7 * i), daily, weekly));
+  const last = daily[daily.length - 1];
+  const since = M.addDays(today, -6);
+  const week = daily.filter((r) => r.date >= since);
+  const daysOk = week.filter((r) => r.value >= STEPS_GOAL).length;
+  const tone = (v) => (v >= STEPS_GOAL ? 'up' : v >= STEPS_GOAL - 1500 ? 'flat' : 'down');
+  const chart = daily.length > 1 ? renderChart(sparkline(daily.slice(-30).map((r) => r.value)), 'pasos') : '';
+  const recent = [...daily].reverse().slice(0, 7).map((r) => measureRow(
+    r, `<span class="badge ${tone(r.value)}">${fmtSteps(r.value)}</span>`,
+  )).join('');
+  const weekLabel = (w, i) => (i === 0 ? 'Esta semana' : i === 1 ? 'Semana pasada' : `Semana del ${fmtDateShort(w.start)}`);
+  const weekRows = weeks.filter((w) => w.avg !== null).map((w) => {
+    const i = weeks.indexOf(w);
+    const source = w.declared ? 'promedio anotado' : `${w.days} ${w.days === 1 ? 'día' : 'días'}`;
+    const del = w.declared
+      ? `<button data-action="del-measure" data-id="${w.declared.id}" type="button" aria-label="Borrar promedio" style="min-height:30px;min-width:30px;padding:0 8px;background:transparent">✕</button>`
+      : '<span style="min-width:30px"></span>';
+    return `
+      <div class="row small" style="padding:6px 0;border-top:1px solid var(--line)">
+        <span class="muted">${weekLabel(w, i)} · ${source}</span>
+        <span class="right nums"><span class="badge ${tone(w.avg)}">${fmtSteps(w.avg)}/día</span></span>
+        ${del}
+      </div>`;
+  }).join('');
+
+  const fallback = `
+    <details style="margin-top:12px">
+      <summary class="small">¿Se te pasó anotar? Pon el promedio semanal</summary>
+      <p class="muted small" style="margin:8px 0">En el iPhone: Salud → Pasos → S (semana) muestra el promedio diario. Si anotas el promedio, manda sobre los días sueltos de esa semana.</p>
+      <div class="field-pair">
+        <select id="m-pasos-semana" aria-label="Semana del promedio">
+          ${weeks.slice(0, 3).map((w, i) => `<option value="${w.start}">${weekLabel(w, i)}</option>`).join('')}
+        </select>
+        <div class="unit-input">
+          <input id="m-pasos-prom" inputmode="numeric" enterkeyhint="done" placeholder="7.500" aria-label="Promedio diario de la semana">
+          <span>/día</span>
+        </div>
+      </div>
+      <button data-action="save-steps-week" type="button" style="width:100%">Guardar promedio semanal</button>
+    </details>`;
+
+  if (!daily.length && !weekly.length) {
+    return `<h2>Pasos</h2><div class="card"><p class="muted">Sin registros todavía. Meta: ${fmtSteps(STEPS_GOAL)} pasos al día.</p>${fallback}</div>`;
+  }
+  return `
+    <h2>Pasos</h2>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="n">${last ? fmtSteps(last.value) : '—'}</div><div class="l">último día</div></div>
+        <div class="stat"><div class="n">${weeks[0].avg === null ? '—' : fmtSteps(weeks[0].avg)}</div><div class="l">promedio semana</div></div>
+        <div class="stat"><div class="n">${daysOk}/${week.length}</div><div class="l">días ≥ ${fmtSteps(STEPS_GOAL)}</div></div>
+      </div>
+      <p class="muted small" style="margin-top:10px">Meta ${fmtSteps(STEPS_GOAL)} pasos al día · ajusta ±1.500 antes de tocar calorías.</p>
+      ${chart}
+      ${recent}
+      ${weekRows ? `<h3 class="small muted" style="margin:14px 0 4px">Promedio por semana</h3>${weekRows}` : ''}
+      ${fallback}
     </div>`;
 }
 
@@ -845,7 +937,21 @@ document.addEventListener('click', async (ev) => {
         document.getElementById('m-sueno-min').value,
       );
       if (sueno !== null) { await store.saveMeasurement({ type: 'sleep', value: sueno, unit: 'h' }); n += 1; }
+      const pasos = stepsFromInput(document.getElementById('m-pasos').value);
+      if (pasos !== null) {
+        await store.saveMeasurement({ type: 'steps', value: pasos, date: document.getElementById('m-pasos-dia').value });
+        n += 1;
+      }
       toast(n ? 'Registro guardado' : 'Nada que guardar');
+      render();
+      break;
+    }
+
+    case 'save-steps-week': {
+      const prom = stepsFromInput(document.getElementById('m-pasos-prom').value);
+      if (prom === null) { toast('Escribe el promedio diario de la semana'); break; }
+      await store.saveMeasurement({ type: 'steps_week', value: prom, date: document.getElementById('m-pasos-semana').value });
+      toast('Promedio semanal guardado');
       render();
       break;
     }

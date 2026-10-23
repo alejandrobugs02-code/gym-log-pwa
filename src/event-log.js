@@ -1,7 +1,7 @@
 // Contrato pequeño del log compartido. La PWA conserva una outbox offline;
 // el adaptador Python la incorpora al log canónico sin servidor ni daemon.
 
-import { uuid4 } from './model.js';
+import { addDays, uuid4 } from './model.js';
 
 export const EVENT_CHANNEL = 'pwa';
 
@@ -86,8 +86,18 @@ export function measurementEvent(row, { op = 'crear', ref, now } = {}) {
   });
 }
 
-// El sueño no es una `medida`: el contrato lo proyecta en `recovery_daily`
-// como `recuperacion` (sleep_hours), igual que el adaptador de Apple Health.
+// Sueño y pasos no son `medida`: el contrato los proyecta en `recovery_daily`
+// como `recuperacion` (sleep_hours, steps), igual que el adaptador de Apple Health.
+// El promedio semanal es el respaldo cuando no se anotaron los días: viaja con
+// su semana explícita y sin `steps`, para no hacerse pasar por un día medido.
+function recoveryDatos(row) {
+  if (row.type === 'steps') return { steps: Math.round(row.value) };
+  if (row.type === 'steps_week') {
+    return { steps_week_avg: Math.round(row.value), week_start: row.date, week_end: addDays(row.date, 6) };
+  }
+  return { sleep_hours: row.value };
+}
+
 export function recoveryEvent(row, { op = 'crear', ref, now } = {}) {
   return event({
     id: op === 'crear' ? row.id : undefined,
@@ -96,7 +106,7 @@ export function recoveryEvent(row, { op = 'crear', ref, now } = {}) {
     op,
     ref,
     now,
-    datos: { sleep_hours: row.value },
+    datos: recoveryDatos(row),
   });
 }
 

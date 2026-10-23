@@ -16,15 +16,18 @@ export const APP_VERSION = '2.0.0';
 export const EXPORT_SCHEMA = 1;
 
 export function canonicalMeasurementType(type) {
-  return ({ peso: 'weight', cintura: 'waist', sueno: 'sleep' })[type] || type || 'weight';
+  return ({ peso: 'weight', cintura: 'waist', sueno: 'sleep', pasos: 'steps' })[type] || type || 'weight';
 }
 
-const MEASUREMENT_UNITS = { weight: 'kg', waist: 'cm', sleep: 'h' };
+const MEASUREMENT_UNITS = { weight: 'kg', waist: 'cm', sleep: 'h', steps: 'pasos', steps_week: 'pasos/día' };
 
-// Localmente el sueño convive con peso y cintura (una cifra por día), pero en
-// el log compartido es `recuperacion`, no `medida`.
+// Localmente sueño y pasos conviven con peso y cintura (una cifra por día; el
+// promedio semanal, una por semana fechada en su lunes), pero en el log
+// compartido son `recuperacion`, no `medida`.
+const RECOVERY_TYPES = new Set(['sleep', 'steps', 'steps_week']);
+
 function logTipo(type) {
-  return type === 'sleep' ? 'recuperacion' : 'medida';
+  return RECOVERY_TYPES.has(type) ? 'recuperacion' : 'medida';
 }
 
 export function createStore() {
@@ -288,7 +291,7 @@ export function createStore() {
       } else {
         state.measurements.push(row);
       }
-      const toEvent = canonicalType === 'sleep' ? recoveryEvent : measurementEvent;
+      const toEvent = RECOVERY_TYPES.has(canonicalType) ? recoveryEvent : measurementEvent;
       const logEvent = toEvent(row, dupe
         ? { op: 'corregir', ref: dupe.logRef || dupe.id }
         : {});

@@ -38,6 +38,19 @@ export function localDate(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+/** Suma días a una fecha YYYY-MM-DD sin pasar por UTC. */
+export function addDays(date, days) {
+  const [y, m, d] = String(date).split('-').map(Number);
+  return localDate(new Date(y, m - 1, d + days));
+}
+
+/** Lunes (YYYY-MM-DD) de la semana de esa fecha, como la cuenta la app Salud en español. */
+export function weekStart(date = localDate()) {
+  const [y, m, d] = String(date).split('-').map(Number);
+  const dow = new Date(y, m - 1, d).getDay();
+  return addDays(date, -((dow + 6) % 7));
+}
+
 export function toKg(weight, unit) {
   const w = Number(weight) || 0;
   return unit === 'lb' ? round(w * LB_TO_KG, 3) : round(w, 3);

@@ -41,6 +41,21 @@ export function hoursFromParts(h, min) {
   return Number.isFinite(total) && total > 0 ? Math.round(total * 100) / 100 : null;
 }
 
+/** Pasos con punto de miles, como en mapa-fisico: 8432 → "8.432". */
+export function fmtSteps(steps) {
+  const v = Math.round(Number(steps));
+  if (!Number.isFinite(v) || v < 0) return '—';
+  return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+/** Pasos escritos a mano ("8.432", "8,432", "8 432") → entero (null si no hay nada). */
+export function stepsFromInput(text) {
+  const digits = String(text ?? '').replace(/[\s.,']/g, '');
+  if (!/^\d+$/.test(digits)) return null;
+  const v = Number(digits);
+  return v > 0 ? v : null;
+}
+
 export function fmtWeight(weight, unit) {
   return `${fmtNum(weight)} ${unit || 'kg'}`;
 }
