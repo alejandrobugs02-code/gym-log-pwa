@@ -33,6 +33,13 @@ html, body {
   overscroll-behavior-y: contain;
 }
 
+/* iOS 26 en la pantalla de inicio deja el viewport corto mientras el documento mide menos
+   que la pantalla, y las barras fijas flotan a media altura (src/viewport-fix.js). Con html
+   al menos tan alto como la pantalla grande, WebKit entrega el viewport completo. */
+@media (display-mode: standalone) {
+  html { min-height: min(100lvh, calc(100% + var(--safe-t))); }
+}
+
 body {
   padding-top: 0;
   padding-bottom: calc(72px + var(--safe-b));
@@ -273,7 +280,7 @@ label { display: block; font-size: .82rem; color: var(--muted); margin: 0 0 6px;
 /* --- pestañas inferiores --- */
 
 .tabs {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  position: fixed; left: 0; right: 0; bottom: calc(0px - var(--vv-shift, 0px)); z-index: 30;
   display: grid; grid-template-columns: repeat(4, 1fr);
   background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: blur(12px);
@@ -298,7 +305,7 @@ label { display: block; font-size: .82rem; color: var(--muted); margin: 0 0 6px;
 .rest {
   position: fixed; z-index: 25;
   left: 50%; transform: translateX(-50%);
-  bottom: calc(72px + var(--safe-b));
+  bottom: calc(72px + var(--safe-b) - var(--vv-shift, 0px));
   display: flex; align-items: center; gap: 10px;
   background: var(--surface-2);
   border: 1px solid var(--accent);
@@ -317,7 +324,7 @@ label { display: block; font-size: .82rem; color: var(--muted); margin: 0 0 6px;
 .toast {
   position: fixed; z-index: 40;
   left: 50%; transform: translate(-50%, 12px);
-  bottom: calc(84px + var(--safe-b));
+  bottom: calc(84px + var(--safe-b) - var(--vv-shift, 0px));
   background: var(--text); color: var(--bg);
   padding: 11px 18px; border-radius: 8px;
   font-weight: 650; font-size: .92rem;
@@ -327,7 +334,7 @@ label { display: block; font-size: .82rem; color: var(--muted); margin: 0 0 6px;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 /* Con descanso en curso, el aviso sube para no tapar el temporizador. */
-body:has(.rest:not(.hidden)) .toast { bottom: calc(140px + var(--safe-b)); }
+body:has(.rest:not(.hidden)) .toast { bottom: calc(140px + var(--safe-b) - var(--vv-shift, 0px)); }
 
 /* --- utilidades --- */
 

@@ -18,6 +18,7 @@ import {
 import {
   beep, cancelRestPush, enablePush, keepScreenOn, pushPermission, scheduleRestPush, unlockAudio,
 } from './rest-alert.js';
+import { healViewport, installViewportFix } from './viewport-fix.js';
 
 const store = createStore();
 const view = document.getElementById('view');
@@ -848,6 +849,9 @@ function render() {
   if (!store.state.ready) { view.innerHTML = '<div class="empty">Cargando…</div>'; return; }
   view.innerHTML = VIEWS[ui.tab]();
   keepScreenOn(Boolean(store.activeSession()));
+  // Cambiar de pestaña o abrir un día cambia el alto del documento: ahí iOS 26 deja las
+  // barras fijas a media pantalla (viewport-fix.js).
+  requestAnimationFrame(healViewport);
   for (const b of document.querySelectorAll('.tab')) {
     b.classList.toggle('active', b.dataset.tab === ui.tab);
   }
@@ -1298,6 +1302,7 @@ setInterval(() => {
 
 // --- arranque ---------------------------------------------------------------
 
+installViewportFix();
 store.subscribe(() => {});
 store.init()
   .then(() => {
